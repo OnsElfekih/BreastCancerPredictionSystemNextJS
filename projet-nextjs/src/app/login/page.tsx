@@ -21,31 +21,38 @@ export default function LoginPage() {
     setPassword(passwordParam);
   }, [searchParams]);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setMessage("");
 
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, role }),
-      });
+  try {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, role }),
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (res.ok) {
-        setMessage("Connexion réussie");
-        setTimeout(() => {
+    if (res.ok) {
+      setMessage("Connexion réussie");
+      localStorage.setItem("token", data.token);
+
+      setTimeout(() => {
+        if (data.role === "patiente") {
+          window.location.href = "/dashboardPatiente";
+        } else if (data.role === "gynécologue") {
           window.location.href = "/dashboard";
-        }, 2000);
-      } else {
-        setMessage(data.error || "Échec de la connexion");
-      }
-    } catch (error) {
-      console.error(error);
-      setMessage("Erreur serveur");
+        }
+      }, 1500);
+    } else {
+      setMessage(data.error || "Échec de la connexion");
     }
-  };
+  } catch (error) {
+    console.error(error);
+    setMessage("Erreur serveur");
+  }
+};
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
