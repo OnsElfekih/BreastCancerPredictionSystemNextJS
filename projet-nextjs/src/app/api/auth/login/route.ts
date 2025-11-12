@@ -14,7 +14,7 @@ export async function POST(req: Request) {
 
     const user = await User.findOne({ email, role });
     if (!user) {
-      return new Response(JSON.stringify({ error: "Email ou mot de passe incorrect" }), { status: 401 });
+      return new Response(JSON.stringify({ error: "Vérifiez votre données" }), { status: 401 });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
