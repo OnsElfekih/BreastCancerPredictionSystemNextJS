@@ -35,7 +35,7 @@ export default function RegisterPage() {
         setMessage("Inscription réussie");
         setTimeout(() => {
           router.push(
-            `/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+            `/login?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&role=${encodeURIComponent(role)}`
           );
         }, 3000);
       } else {

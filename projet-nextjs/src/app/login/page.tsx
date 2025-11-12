@@ -17,8 +17,10 @@ export default function LoginPage() {
     document.title = "Login - Système de Prédiction du Cancer du Sein";
     const emailParam = searchParams.get("email") || "";
     const passwordParam = searchParams.get("password") || "";
+    const roleParam = searchParams.get("role") || "gynécologue";
     setEmail(emailParam);
     setPassword(passwordParam);
+    setRole(roleParam);
   }, [searchParams]);
 
 const handleLogin = async (e: React.FormEvent) => {
@@ -37,6 +39,9 @@ const handleLogin = async (e: React.FormEvent) => {
     if (res.ok) {
       setMessage("Connexion réussie");
       localStorage.setItem("token", data.token);
+      localStorage.setItem("nom", data.nom);
+      localStorage.setItem("prenom", data.prenom);
+      localStorage.setItem("role", data.role);
 
       setTimeout(() => {
         if (data.role === "patiente") {
