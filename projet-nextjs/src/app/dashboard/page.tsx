@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
+import DashboardLayout from "./DashboardLayout";
 
-export default function DashboarPatiente() {
+export default function Dashboard() {
   const [user, setUser] = useState({ nom: "", prenom: "" });
 
   useEffect(() => {
@@ -11,10 +12,13 @@ export default function DashboarPatiente() {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-      <h1 className="text-2xl font-semibold">
-        Bonjour Dr {user.nom} {user.prenom}
+    <DashboardLayout user={user}>
+      <h1 className="text-2xl font-semibold mb-4 text-black !important">
+        Tableau de bord
       </h1>
-    </div>
+      <p className="text-black !important">
+        Bienvenue dans votre espace de gestion des patientes et rapports médicaux.
+      </p>
+    </DashboardLayout>
   );
 }
