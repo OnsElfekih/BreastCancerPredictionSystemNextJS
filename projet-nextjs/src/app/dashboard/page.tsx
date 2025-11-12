@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 
-export default function DashboardPage() {
+export default function DashboarPatiente() {
   const [user, setUser] = useState({ nom: "", prenom: "" });
 
   useEffect(() => {
