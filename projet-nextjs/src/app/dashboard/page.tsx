@@ -13,10 +13,8 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout user={user}>
-      <h1 className="text-2xl font-semibold mb-4 text-black !important">
-        Tableau de bord
-      </h1>
-      <p className="text-black !important">
+      <h1 className="text-2xl font-semibold mb-4 text-black">Tableau de bord</h1>
+      <p className="text-black">
         Bienvenue dans votre espace de gestion des patientes et rapports médicaux.
       </p>
     </DashboardLayout>
