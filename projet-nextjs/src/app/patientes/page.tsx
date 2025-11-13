@@ -6,11 +6,11 @@ interface PatienteData {
   _id: string;
   idDossierMedical: string;
   dateDeNaissance: string;
-  userId: {
-    nom: string;
-    prenom: string;
-    email: string;
-  };
+  userId?: {
+    nom?: string;
+    prenom?: string;
+    email?: string;
+  } | null;
 }
 
 export default function PatientesPage() {
@@ -18,80 +18,97 @@ export default function PatientesPage() {
   const [patientes, setPatientes] = useState<PatienteData[]>([]);
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
-const [formData, setFormData] = useState({
-  nom: "",
-  prenom: "",
-  email: "",
-  password: "",
-  idDossierMedical: "",
-  dateDeNaissance: "",
-});
+  const [formData, setFormData] = useState({
+    nom: "",
+    prenom: "",
+    email: "",
+    password: "",
+    idDossierMedical: "",
+    dateDeNaissance: "",
+  });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const nom = localStorage.getItem("nom") || "";
     const prenom = localStorage.getItem("prenom") || "";
     setUser({ nom, prenom });
-
-    fetch("/api/patientes")
-      .then((res) => res.json())
-      .then((data) => setPatientes(data))
-      .catch((err) => console.error(err));
+    loadPatientes();
   }, []);
 
-  const handleEdit = (id: string) => {
-    console.log("Modifier patiente", id);
+  const loadPatientes = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/patientes");
+      if (!res.ok) {
+        console.error("fetch /api/patientes status", res.status);
+        setPatientes([]);
+        setLoading(false);
+        return;
+      }
+      const data = await res.json();
+      setPatientes(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Erreur fetch patientes:", err);
+      setPatientes([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
+    if (!confirm("Supprimer cette patiente ?")) return;
     try {
-      await fetch(`/api/patientes/${id}`, { method: "DELETE" });
-      setPatientes(patientes.filter(p => p._id !== id));
-    } catch (error) {
-      console.error("Erreur lors de la suppression", error);
+      const res = await fetch(`/api/patientes/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setPatientes(prev => prev.filter(p => p._id !== id));
+      } else {
+        console.error("Erreur suppression", await res.text());
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const handleAddClick = () => setShowForm(true);
-const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  setFormData({ ...formData, [e.target.name]: e.target.value });
-};
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-const handleFormSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  try {
-    const response = await fetch("/api/patientes", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-
-    const data = await response.json();
-
-    if (response.ok) {
-      setPatientes([...patientes, data.patiente]);
-      setFormData({
-        nom: "",
-        prenom: "",
-        email: "",
-        password: "",
-        idDossierMedical: "",
-        dateDeNaissance: "",
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/patientes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
-      setShowForm(false);
-    } else {
-      alert(data.message || "Erreur lors de l'ajout");
+      const data = await res.json();
+      if (res.ok) {
+        // API renvoie patiente avec user peuplé
+        setPatientes(prev => [...prev, data.patiente]);
+        setFormData({
+          nom: "",
+          prenom: "",
+          email: "",
+          password: "",
+          idDossierMedical: "",
+          dateDeNaissance: "",
+        });
+        setShowForm(false);
+      } else {
+        alert(data.message || "Erreur lors de l'ajout");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Erreur réseau lors de l'ajout");
     }
-  } catch (error) {
-    console.error(error);
-  }
-};
+  };
 
-
-const filteredPatientes = patientes.filter(p =>
-  p.userId?.nom?.toLowerCase().includes(search.toLowerCase()) ||
-  p.userId?.prenom?.toLowerCase().includes(search.toLowerCase()) ||
-  p.idDossierMedical.toLowerCase().includes(search.toLowerCase())
-);
+  const filteredPatientes = patientes.filter(p =>
+    (p.userId?.nom || "").toLowerCase().includes(search.toLowerCase()) ||
+    (p.userId?.prenom || "").toLowerCase().includes(search.toLowerCase()) ||
+    (p.idDossierMedical || "").toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <DashboardLayout user={user}>
@@ -117,116 +134,60 @@ const filteredPatientes = patientes.filter(p =>
       </div>
 
       {showForm && (
-        <form
-          onSubmit={handleFormSubmit}
-          className="mb-4 p-4 bg-gray-100 rounded max-w-5xl"
-        >
+        <form onSubmit={handleFormSubmit} className="mb-4 p-4 bg-gray-100 rounded max-w-5xl">
           <div className="flex gap-4 mb-2">
-            <input
-              type="text"
-              name="nom"
-              placeholder="Nom"
-              value={formData.nom}
-              onChange={handleFormChange}
-              className="px-2 py-1 border rounded flex-1"
-              required
-            />
-            <input
-              type="text"
-              name="prenom"
-              placeholder="Prénom"
-              value={formData.prenom}
-              onChange={handleFormChange}
-              className="px-2 py-1 border rounded flex-1"
-              required
-            />
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={formData.email}
-              onChange={handleFormChange}
-              className="px-2 py-1 border rounded flex-1"
-              required
-            />
+            <input type="text" name="nom" placeholder="Nom" value={formData.nom} onChange={handleFormChange} className="px-2 py-1 border rounded flex-1" required />
+            <input type="text" name="prenom" placeholder="Prénom" value={formData.prenom} onChange={handleFormChange} className="px-2 py-1 border rounded flex-1" required />
+            <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleFormChange} className="px-2 py-1 border rounded flex-1" required />
           </div>
+
           <div className="flex gap-4 mb-2">
-            <input
-                type="password"
-                name="password"
-                placeholder="Mot de passe"
-                value={formData.password}
-                onChange={handleFormChange}
-                className="px-2 py-1 border rounded flex-1"
-                required
-            />
-            </div>
-          <div className="flex gap-4 mb-2">
-            <input
-              type="text"
-              name="idDossierMedical"
-              placeholder="ID Dossier médical"
-              value={formData.idDossierMedical}
-              onChange={handleFormChange}
-              className="px-2 py-1 border rounded flex-1"
-              required
-            />
-            <input
-              type="date"
-              name="dateDeNaissance"
-              placeholder="Date de naissance"
-              value={formData.dateDeNaissance}
-              onChange={handleFormChange}
-              className="px-2 py-1 border rounded flex-1"
-              required
-            />
+            <input type="password" name="password" placeholder="Mot de passe" value={formData.password} onChange={handleFormChange} className="px-2 py-1 border rounded flex-1" required />
           </div>
-          <button
-            type="submit"
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-          >
-            Enregistrer
-          </button>
+
+          <div className="flex gap-4 mb-2">
+            <input type="text" name="idDossierMedical" placeholder="ID Dossier médical" value={formData.idDossierMedical} onChange={handleFormChange} className="px-2 py-1 border rounded flex-1" required />
+            <input type="date" name="dateDeNaissance" placeholder="Date de naissance" value={formData.dateDeNaissance} onChange={handleFormChange} className="px-2 py-1 border rounded flex-1" required />
+          </div>
+
+          <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Enregistrer</button>
         </form>
       )}
 
-      <table className="w-full border border-gray-300 bg-white rounded">
-        <thead>
-          <tr>
-            <th className="border px-4 py-2 w-32">Nom</th>
-            <th className="border px-4 py-2 w-32">Prénom</th>
-            <th className="border px-4 py-2 w-80">Email</th>
-            <th className="border px-4 py-2 w-32">ID Dossier</th>
-            <th className="border px-4 py-2 w-24">Date de naissance</th>
-            <th className="border px-4 py-2 w-40">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredPatientes.map((p) => (
-            <tr key={p._id}>
-              <td className="border px-4 py-2 w-32">{p.userId.nom}</td>
-              <td className="border px-4 py-2 w-32">{p.userId.prenom}</td>
-              <td className="border px-4 py-2 w-80">{p.userId.email}</td>
-              <td className="border px-4 py-2 w-32">{p.idDossierMedical}</td>
-              <td className="border px-4 py-2 w-24">{p.dateDeNaissance}</td>
-              <td className="border px-4 py-2 w-40 flex gap-2">
-                <button
-                  onClick={() => handleEdit(p._id)}
-                  className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
-                >
-                  Modifier
-                </button>
-                <button
-                  onClick={() => handleDelete(p._id)}
-                  className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                >
-                  Supprimer
-                </button>
-              </td>
+      {loading ? <p>Chargement...</p> : (
+        <table className="w-full border border-gray-300 bg-white rounded">
+          <thead>
+            <tr>
+              <th className="border px-4 py-2 w-32">Nom</th>
+              <th className="border px-4 py-2 w-32">Prénom</th>
+              <th className="border px-4 py-2 w-72">Email</th>
+              <th className="border px-4 py-2 w-32">ID Dossier</th>
+              <th className="border px-4 py-2 w-24">Date</th>
+              <th className="border px-4 py-2 w-70">Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredPatientes.map((p) => (
+              <tr key={p._id}>
+                <td className="border px-4 py-2 w-32">{p.userId?.nom || "-"}</td>
+                <td className="border px-4 py-2 w-32">{p.userId?.prenom || "-"}</td>
+                <td className="border px-4 py-2 w-72">{p.userId?.email || "-"}</td>
+                <td className="border px-4 py-2 w-32">{p.idDossierMedical}</td>
+                <td className="border px-4 py-2 w-24">{p.dateDeNaissance ? new Date(p.dateDeNaissance).toLocaleDateString("fr-FR") : "-"}</td>
+                <td className="border px-4 py-2 w-70 flex gap-2">
+                  <button onClick={() => console.log("Modifier", p._id)} className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 flex-1 text-center">Modifier</button>
+                <button
+                onClick={() => handleDelete(p._id)}
+                className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 flex-1 text-center"
+                >
+                Supprimer
+                </button>                
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </DashboardLayout>
   );
 }

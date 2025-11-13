@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IPatiente extends Document {
-  userId: mongoose.Types.ObjectId; // référence vers l'utilisateur dans User
+  userId: mongoose.Types.ObjectId;
   dateDeNaissance: Date;
   idDossierMedical: string;
 }
