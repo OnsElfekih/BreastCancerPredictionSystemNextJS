@@ -1,5 +1,6 @@
 "use client";
 import { ReactNode, useState, useEffect, useRef } from "react";
+import Link from "next/link";
 
 // Icônes
 export const GridIcon = () => (
@@ -64,7 +65,7 @@ export default function DashboardLayout({ children, user }: LayoutProps) {
 
   const navItems = [
     { icon: <GridIcon />, name: "Dashboard", path: "/dashboard" },
-    { icon: <UserCircleIcon />, name: "Gérer patientes", path: "/patients" },
+    { icon: <UserCircleIcon />, name: "Patientes", path: "/patientes" },
     { icon: <PageIcon />, name: "Rapports médicaux", path: "/rapports" },
     { icon: <TableIcon />, name: "Données cliniques", path: "/donnees-cliniques" },
   ];
@@ -93,17 +94,16 @@ export default function DashboardLayout({ children, user }: LayoutProps) {
         }`}
       >
         <h2 className="text-xl font-bold mb-6">Menu</h2>
-        <ul>
-          {navItems.map((item, index) => (
-            <li
-              key={index}
-              className="flex items-center gap-2 p-2 hover:bg-gray-700 rounded cursor-pointer"
-            >
-              {item.icon}
-              <span>{item.name}</span>
-            </li>
-          ))}
-        </ul>
+<ul>
+  {navItems.map((item, index) => (
+    <li key={index} className="flex items-center gap-2 p-2 hover:bg-gray-700 rounded cursor-pointer">
+      {item.icon}
+      <Link href={item.path}>
+        <span>{item.name}</span>
+      </Link>
+    </li>
+  ))}
+</ul>
       </div>
 
       {/* Main content */}
