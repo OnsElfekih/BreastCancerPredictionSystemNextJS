@@ -24,9 +24,9 @@ export default function Dashboard() {
         Bienvenue dans votre espace de gestion des patientes et rapports médicaux.
       </p>
 
-      <div className="bg-white shadow-lg rounded-lg p-6 border border-gray-200 w-full max-w-sm">
-        <h2 className="text-lg font-medium text-gray-700 mb-2">Total patientes</h2>
-        <p className="text-3xl font-bold text-gray-900">{totalPatientes}</p>
+      <div className="bg-white shadow-lg rounded-lg p-6 border border-pink-200 w-full max-w-sm mb-6">
+        <h2 className="text-lg font-medium text-pink-700 mb-2">Total patientes</h2>
+        <p className="text-3xl font-bold text-pink-900">{totalPatientes}</p>
       </div>
     </DashboardLayout>
   );

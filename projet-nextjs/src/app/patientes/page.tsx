@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import DashboardLayout from "../dashboard/DashboardLayout";
 
 interface PatienteData {
@@ -18,6 +19,7 @@ export default function PatientesPage() {
   const [patientes, setPatientes] = useState<PatienteData[]>([]);
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     nom: "",
     prenom: "",
@@ -84,7 +86,6 @@ export default function PatientesPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        // API renvoie patiente avec user peuplé
         setPatientes(prev => [...prev, data.patiente]);
         setFormData({
           nom: "",
@@ -112,9 +113,9 @@ export default function PatientesPage() {
 
   return (
     <DashboardLayout user={user}>
-      <div className="bg-white shadow-lg rounded-lg p-6 border border-gray-200 w-full max-w-sm mb-6">
-        <h2 className="text-lg font-medium text-gray-700 mb-2">Total patientes</h2>
-        <p className="text-3xl font-bold text-gray-900">{patientes.length}</p>
+      <div className="bg-white shadow-lg rounded-lg p-6 border border-pink-200 w-full max-w-sm mb-6">
+        <h2 className="text-lg font-medium text-pink-700 mb-2">Total patientes</h2>
+        <p className="text-3xl font-bold text-pink-900">{patientes.length}</p>
       </div>
 
       <div className="flex items-center mb-4 max-w-5xl">
@@ -123,7 +124,7 @@ export default function PatientesPage() {
           placeholder="Rechercher par Nom, Prénom ou ID Dossier"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="px-4 py-2 border rounded flex-grow mr-2"
+          className="px-4 py-2 border border-pink-300 rounded flex-grow mr-2 focus:outline-none focus:ring-2 focus:ring-pink-400"
         />
         <button
           onClick={handleAddClick}
@@ -134,54 +135,148 @@ export default function PatientesPage() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleFormSubmit} className="mb-4 p-4 bg-gray-100 rounded max-w-5xl">
-          <div className="flex gap-4 mb-2">
-            <input type="text" name="nom" placeholder="Nom" value={formData.nom} onChange={handleFormChange} className="px-2 py-1 border rounded flex-1" required />
-            <input type="text" name="prenom" placeholder="Prénom" value={formData.prenom} onChange={handleFormChange} className="px-2 py-1 border rounded flex-1" required />
-            <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleFormChange} className="px-2 py-1 border rounded flex-1" required />
-          </div>
+        <div className="max-w-4xl mx-auto mb-6">
+          <div className="bg-white shadow-md rounded-lg p-6 border border-pink-200">
+            <h3 className="text-xl font-semibold text-pink-700 mb-4">
+              Ajouter une nouvelle patiente
+            </h3>
+            <form onSubmit={handleFormSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input
+                  type="text"
+                  name="nom"
+                  placeholder="Nom"
+                  value={formData.nom}
+                  onChange={handleFormChange}
+                  className="px-3 py-2 border border-pink-300 rounded focus:ring-2 focus:ring-pink-400"
+                  required
+                />
+                <input
+                  type="text"
+                  name="prenom"
+                  placeholder="Prénom"
+                  value={formData.prenom}
+                  onChange={handleFormChange}
+                  className="px-3 py-2 border border-pink-300 rounded focus:ring-2 focus:ring-pink-400"
+                  required
+                />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={handleFormChange}
+                  className="px-3 py-2 border border-pink-300 rounded focus:ring-2 focus:ring-pink-400"
+                  required
+                />
+              </div>
 
-          <div className="flex gap-4 mb-2">
-            <input type="password" name="password" placeholder="Mot de passe" value={formData.password} onChange={handleFormChange} className="px-2 py-1 border rounded flex-1" required />
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Mot de passe"
+                    value={formData.password}
+                    onChange={handleFormChange}
+                    className="px-3 py-2 border border-pink-300 rounded w-full focus:ring-2 focus:ring-pink-400 pr-10"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-2.5 text-gray-500 hover:text-pink-600"
+                  >
+                    {showPassword ? (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeIcon className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
 
-          <div className="flex gap-4 mb-2">
-            <input type="text" name="idDossierMedical" placeholder="ID Dossier médical" value={formData.idDossierMedical} onChange={handleFormChange} className="px-2 py-1 border rounded flex-1" required />
-            <input type="date" name="dateDeNaissance" placeholder="Date de naissance" value={formData.dateDeNaissance} onChange={handleFormChange} className="px-2 py-1 border rounded flex-1" required />
-          </div>
+                <input
+                  type="text"
+                  name="idDossierMedical"
+                  placeholder="ID Dossier médical"
+                  value={formData.idDossierMedical}
+                  onChange={handleFormChange}
+                  className="px-3 py-2 border border-pink-300 rounded focus:ring-2 focus:ring-pink-400"
+                  required
+                />
+              </div>
 
-          <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Enregistrer</button>
-        </form>
+              <div className="flex flex-col md:flex-row gap-4">
+                <label className="flex-1 flex flex-col text-pink-700">
+                  Date de naissance
+                  <input
+                    type="date"
+                    name="dateDeNaissance"
+                    value={formData.dateDeNaissance}
+                    onChange={handleFormChange}
+                    className="mt-1 px-3 py-2 border border-pink-300 rounded focus:ring-2 focus:ring-pink-400"
+                    required
+                  />
+                </label>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  className="px-4 py-2 border rounded bg-gray-200 hover:bg-gray-300"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-pink-500 text-white rounded hover:bg-pink-600"
+                >
+                  Enregistrer
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
 
-      {loading ? <p>Chargement...</p> : (
-        <table className="w-full border border-gray-300 bg-white rounded">
-          <thead>
+      {loading ? (
+        <p>Chargement...</p>
+      ) : (
+        <table className="w-full border border-pink-200 bg-white rounded">
+          <thead className="bg-pink-50">
             <tr>
-              <th className="border px-4 py-2 w-32">Nom</th>
-              <th className="border px-4 py-2 w-32">Prénom</th>
-              <th className="border px-4 py-2 w-72">Email</th>
-              <th className="border px-4 py-2 w-32">ID Dossier</th>
-              <th className="border px-4 py-2 w-24">Date</th>
-              <th className="border px-4 py-2 w-70">Action</th>
+              <th className="border px-4 py-2 text-pink-700">Nom</th>
+              <th className="border px-4 py-2 text-pink-700">Prénom</th>
+              <th className="border px-4 py-2 text-pink-700">Email</th>
+              <th className="border px-4 py-2 text-pink-700">ID Dossier</th>
+              <th className="border px-4 py-2 text-pink-700">Date</th>
+              <th className="border px-4 py-2 text-pink-700">Action</th>
             </tr>
           </thead>
           <tbody>
             {filteredPatientes.map((p) => (
               <tr key={p._id}>
-                <td className="border px-4 py-2 w-32">{p.userId?.nom || "-"}</td>
-                <td className="border px-4 py-2 w-32">{p.userId?.prenom || "-"}</td>
-                <td className="border px-4 py-2 w-72">{p.userId?.email || "-"}</td>
-                <td className="border px-4 py-2 w-32">{p.idDossierMedical}</td>
-                <td className="border px-4 py-2 w-24">{p.dateDeNaissance ? new Date(p.dateDeNaissance).toLocaleDateString("fr-FR") : "-"}</td>
-                <td className="border px-4 py-2 w-70 flex gap-2">
-                  <button onClick={() => console.log("Modifier", p._id)} className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 flex-1 text-center">Modifier</button>
-                <button
-                onClick={() => handleDelete(p._id)}
-                className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 flex-1 text-center"
-                >
-                Supprimer
-                </button>                
+                <td className="border px-4 py-2">{p.userId?.nom || "-"}</td>
+                <td className="border px-4 py-2">{p.userId?.prenom || "-"}</td>
+                <td className="border px-4 py-2">{p.userId?.email || "-"}</td>
+                <td className="border px-4 py-2">{p.idDossierMedical}</td>
+                <td className="border px-4 py-2">
+                  {p.dateDeNaissance ? new Date(p.dateDeNaissance).toLocaleDateString("fr-FR") : "-"}
+                </td>
+                <td className="border px-4 py-2 flex gap-2">
+                  <button
+                    onClick={() => console.log("Modifier", p._id)}
+                    className="bg-pink-400 text-white px-2 py-1 rounded hover:bg-pink-500 flex-1 text-center"
+                  >
+                    Modifier
+                  </button>
+                  <button
+                    onClick={() => handleDelete(p._id)}
+                    className="bg-rose-500 text-white px-2 py-1 rounded hover:bg-rose-600 flex-1 text-center"
+                  >
+                    Supprimer
+                  </button>
                 </td>
               </tr>
             ))}
