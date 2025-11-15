@@ -1,3 +1,4 @@
+// models/IPatiente.ts
 import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IPatiente extends Document {
@@ -12,7 +13,5 @@ const PatienteSchema: Schema<IPatiente> = new Schema({
   idDossierMedical: { type: String, required: true, unique: true },
 });
 
-const Patiente: Model<IPatiente> =
-  mongoose.models.Patiente || mongoose.model<IPatiente>("Patiente", PatienteSchema);
-
+const Patiente: Model<IPatiente> = mongoose.models.Patiente || mongoose.model<IPatiente>("Patiente", PatienteSchema);
 export default Patiente;

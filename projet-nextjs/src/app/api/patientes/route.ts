@@ -1,3 +1,4 @@
+// /api/patientes/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongodb";
 import User from "@/models/User";
@@ -18,7 +19,7 @@ export async function POST(req: NextRequest) {
     }
 
     const dateNaissance = new Date(body.dateDeNaissance);
-    if (isNaN(dateNaissance.getTime())) {
+    if (isNaN(dateNaissance.getTime()) || dateNaissance > new Date()) {
       return NextResponse.json({ message: "Date de naissance invalide" }, { status: 400 });
     }
 
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
       prenom: body.prenom,
       email: body.email,
       password: hash,
-      role: "patiente" // Ajout du rôle pour passer la validation
+      role: "patiente"
     });
 
     const newPatiente = await Patiente.create({
@@ -38,16 +39,17 @@ export async function POST(req: NextRequest) {
       userId: newUser._id
     });
 
-const newPatientePopulated = await newPatiente.populate("userId", "nom prenom email");
+    const newPatientePopulated = await newPatiente.populate("userId", "nom prenom email");
 
-return NextResponse.json(
-  { message: "Patiente créée", patiente: newPatientePopulated },
-  { status: 201 }
-);
+    return NextResponse.json({ message: "Patiente créée", patiente: newPatientePopulated }, { status: 201 });
   } catch (error: any) {
-    console.error("POST /api/patientes error:", error);
     if (error.code === 11000) {
-      return NextResponse.json({ message: "Email déjà utilisé" }, { status: 400 });
+      if (error.keyPattern?.email) {
+        return NextResponse.json({ message: "Email déjà utilisé" }, { status: 400 });
+      }
+      if (error.keyPattern?.idDossierMedical) {
+        return NextResponse.json({ message: "ID Dossier Médical déjà utilisé" }, { status: 400 });
+      }
     }
     return NextResponse.json({ message: "Erreur ajout", error: String(error) }, { status: 500 });
   }
@@ -57,21 +59,44 @@ return NextResponse.json(
 export async function GET() {
   try {
     await dbConnect();
-    const patientes = await Patiente.find()
-      .populate("userId", "nom prenom email")
-      .lean();
-
+    const patientes = await Patiente.find().populate("userId", "nom prenom email").lean();
     return NextResponse.json(patientes, { status: 200 });
   } catch (error) {
     return NextResponse.json({ message: "Erreur récupération", error: String(error) }, { status: 500 });
   }
 }
 
+/* ----------------------- PUT ---------------------- */
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    await dbConnect();
+    const { id } = await params;
+    const body = await req.json();
+
+    const patiente = await Patiente.findById(id).populate("userId");
+    if (!patiente) return NextResponse.json({ message: "Patiente introuvable" }, { status: 404 });
+
+    const userUpdate: any = { nom: body.nom, prenom: body.prenom, email: body.email };
+    if (body.password && body.password.trim() !== "") {
+      userUpdate.password = await bcrypt.hash(body.password, 10);
+    }
+
+    await User.findByIdAndUpdate(patiente.userId._id, userUpdate);
+
+    patiente.idDossierMedical = body.idDossierMedical;
+    patiente.dateDeNaissance = new Date(body.dateDeNaissance);
+
+    await patiente.save();
+    await patiente.populate("userId", "nom prenom email");
+
+    return NextResponse.json({ message: "Patiente mise à jour", patiente }, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ message: "Erreur mise à jour", error: String(error) }, { status: 500 });
+  }
+}
+
 /* ----------------------- DELETE ---------------------- */
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await dbConnect();
     const { id } = await params;
@@ -87,43 +112,5 @@ export async function DELETE(
     return NextResponse.json({ message: "Patiente et utilisateur supprimés" }, { status: 200 });
   } catch (error) {
     return NextResponse.json({ message: "Erreur suppression", error: String(error) }, { status: 500 });
-  }
-}
-
-/* ----------------------- PUT ---------------------- */
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    await dbConnect();
-    const { id } = await params;
-    const body = await req.json();
-
-    const patiente = await Patiente.findById(id).populate("userId");
-    if (!patiente) return NextResponse.json({ message: "Patiente introuvable" }, { status: 404 });
-
-    const userUpdate: any = {
-      nom: body.nom,
-      prenom: body.prenom,
-      email: body.email
-    };
-
-    if (body.password && body.password.trim() !== "") {
-      const hash = await bcrypt.hash(body.password, 10);
-      userUpdate.password = hash;
-    }
-
-    await User.findByIdAndUpdate(patiente.userId._id, userUpdate);
-
-    patiente.idDossierMedical = body.idDossierMedical;
-    patiente.dateDeNaissance = new Date(body.dateDeNaissance);
-
-    await patiente.save();
-    await patiente.populate("userId", "nom prenom email");
-
-    return NextResponse.json({ message: "Patiente mise à jour", patiente }, { status: 200 });
-  } catch (error) {
-    return NextResponse.json({ message: "Erreur mise à jour", error: String(error) }, { status: 500 });
   }
 }

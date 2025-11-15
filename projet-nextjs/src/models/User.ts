@@ -1,3 +1,4 @@
+// models/User.ts
 import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IUser extends Document {
@@ -16,7 +17,5 @@ const UserSchema: Schema<IUser> = new Schema({
   role: { type: String, enum: ["gynécologue", "patiente"], required: true },
 });
 
-const User: Model<IUser> =
-  mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
-
+const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
 export default User;
