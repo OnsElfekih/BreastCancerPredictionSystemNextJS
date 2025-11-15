@@ -21,7 +21,6 @@ export default function PatientesPage() {
   const [showForm, setShowForm] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const [showDelete, setShowDelete] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -34,8 +33,8 @@ export default function PatientesPage() {
     idDossierMedical: "",
     dateDeNaissance: "",
   });
-  const [editingId, setEditingId] = useState<string | null>(null);
 
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
     const nom = localStorage.getItem("nom") || "";
@@ -62,7 +61,6 @@ export default function PatientesPage() {
     }
   };
 
-  /* ------------------ DELETE ------------------- */
   const handleDelete = async () => {
     if (!deleteId) return;
 
@@ -80,9 +78,32 @@ export default function PatientesPage() {
     setDeleteId(null);
   };
 
-  /* ------------------ ADD ------------------- */
   const handleAddClick = () => {
     setErrorMessage("");
+    setFormData({
+      nom: "",
+      prenom: "",
+      email: "",
+      password: "",
+      idDossierMedical: "",
+      dateDeNaissance: "",
+    });
+    setEditingId(null);
+    setShowForm(true);
+  };
+
+  const handleEditClick = (p: PatienteData) => {
+    setFormData({
+      nom: p.userId?.nom || "",
+      prenom: p.userId?.prenom || "",
+      email: p.userId?.email || "",
+      password: "",
+      idDossierMedical: p.idDossierMedical, // affiché en lecture seule
+      dateDeNaissance: p.dateDeNaissance
+        ? new Date(p.dateDeNaissance).toISOString().split("T")[0]
+        : "",
+    });
+    setEditingId(p._id);
     setShowForm(true);
   };
 
@@ -90,31 +111,13 @@ export default function PatientesPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-const handleEditClick = (p: PatienteData) => {
-  setFormData({
-    nom: p.userId?.nom || "",
-    prenom: p.userId?.prenom || "",
-    email: p.userId?.email || "",
-    password: "",  
-    idDossierMedical: p.idDossierMedical, // affiché
-    dateDeNaissance: p.dateDeNaissance
-      ? new Date(p.dateDeNaissance).toISOString().split("T")[0]
-      : ""
-  })
-  setEditingId(p._id)
-  setShowForm(true)
-}
-
-
-// Modification du handleFormSubmit
 const handleFormSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setErrorMessage("");
 
   if (formData.dateDeNaissance) {
     const selectedDate = new Date(formData.dateDeNaissance);
-    const today = new Date();
-    if (selectedDate > today) {
+    if (selectedDate > new Date()) {
       setErrorMessage("La date de naissance ne peut pas être dans le futur");
       return;
     }
@@ -124,12 +127,11 @@ const handleFormSubmit = async (e: React.FormEvent) => {
     const url = editingId ? `/api/patientes/${editingId}` : "/api/patientes";
     const method = editingId ? "PUT" : "POST";
 
-const res = await fetch(url, {
-  method,
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(formData)
-})
-
+    const res = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
 
     const data = await res.json();
 
@@ -141,14 +143,8 @@ const res = await fetch(url, {
       } else {
         setPatientes((prev) => [...prev, data.patiente]);
       }
-      setFormData({
-        nom: "",
-        prenom: "",
-        email: "",
-        password: "",
-        idDossierMedical: "",
-        dateDeNaissance: "",
-      });
+
+      setFormData({ nom: "", prenom: "", email: "", password: "", idDossierMedical: "", dateDeNaissance: "" });
       setShowForm(false);
       setEditingId(null);
     } else {
@@ -170,19 +166,20 @@ const res = await fetch(url, {
   return (
     <DashboardLayout user={user}>
       <div className={showForm || showDelete ? "blur-sm pointer-events-none" : ""}>
+        {/* Total patientes */}
         <div className="bg-white shadow-lg rounded-lg p-6 border border-pink-200 w-full max-w-sm mb-6">
           <h2 className="text-lg font-medium text-pink-700 mb-2">Total patientes</h2>
           <p className="text-3xl font-bold text-pink-900">{patientes.length}</p>
         </div>
 
+        {/* Recherche + Ajouter */}
         <div className="flex items-center mb-4 max-w-5xl">
           <input
             type="text"
             placeholder="Rechercher par Nom, Prénom ou ID Dossier"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="px-4 py-2 border border-pink-300 rounded flex-grow mr-2
-            focus:outline-none focus:ring-2 focus:ring-pink-400"
+            className="px-4 py-2 border border-pink-300 rounded flex-grow mr-2 focus:outline-none focus:ring-2 focus:ring-pink-400"
           />
           <button
             onClick={handleAddClick}
@@ -192,6 +189,7 @@ const res = await fetch(url, {
           </button>
         </div>
 
+        {/* Tableau */}
         {loading ? (
           <p>Chargement...</p>
         ) : (
@@ -218,7 +216,6 @@ const res = await fetch(url, {
                       ? new Date(p.dateDeNaissance).toLocaleDateString("fr-FR")
                       : "-"}
                   </td>
-
                   <td className="border px-4 py-2 flex gap-2">
                     <button
                       onClick={() => handleEditClick(p)}
@@ -243,14 +240,13 @@ const res = await fetch(url, {
         )}
       </div>
 
-      {/* ----------- MODAL AJOUT ------------ */}
+      {/* ----------- MODAL AJOUT / MODIF ------------ */}
       {showForm && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black/30"></div>
-
           <div className="relative bg-white shadow-md rounded-lg p-6 border border-pink-200 w-full max-w-3xl z-50">
             <h3 className="text-xl font-semibold text-pink-700 mb-4">
-              Ajouter une nouvelle patiente
+              {editingId ? "Modifier patiente" : "Ajouter une nouvelle patiente"}
             </h3>
 
             {errorMessage && (
@@ -288,31 +284,35 @@ const res = await fetch(url, {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-<div className="relative">
-  <input
-    type={showPassword ? "text" : "password"}
-    name="password"
-    placeholder="Nouveau mot de passe"
-    value={formData.password}
-    onChange={handleFormChange}
-    className="px-3 py-2 border border-pink-300 rounded w-full"
-  />
-  <button
-    type="button"
-    onClick={() => setShowPassword(!showPassword)}
-    className="absolute right-2 top-2 text-gray-600"
-  >
-    {showPassword ? <EyeSlashIcon className="w-5"/> : <EyeIcon className="w-5" />}
-  </button>
-</div>
-
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Mot de passe"
+                    value={formData.password}
+                    onChange={handleFormChange}
+                    className="px-3 py-2 border border-pink-300 rounded w-full"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-2 top-2 text-gray-600"
+                  >
+                    {showPassword ? <EyeSlashIcon className="w-5"/> : <EyeIcon className="w-5" />}
+                  </button>
+                </div>
 
 <input
   type="text"
   name="idDossierMedical"
   value={formData.idDossierMedical}
-  readOnly
-  className="px-3 py-2 border border-pink-300 rounded bg-gray-100"
+  readOnly={!!editingId} // lecture seule uniquement en modification
+  placeholder="ID Dossier Medical"
+  onChange={handleFormChange} // obligatoire pour saisir
+  required={!editingId} // champ obligatoire seulement en ajout
+  className={`px-3 py-2 border rounded w-full ${
+    editingId ? "bg-gray-100" : "bg-white"
+  } border-pink-300`}
 />
 
               </div>
@@ -352,7 +352,6 @@ const res = await fetch(url, {
       {showDelete && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black/30"></div>
-
           <div className="relative bg-white shadow-lg rounded-lg p-6 border border-pink-300 w-full max-w-md z-50">
             <h3 className="text-lg font-semibold text-pink-700 mb-4">
               Confirmer la suppression
