@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongodb";
 import User from "@/models/User";
 import Patiente from "@/models/IPatiente";
+import bcrypt from "bcryptjs"
 
 export async function DELETE(
   req: NextRequest,
@@ -40,3 +41,49 @@ export async function DELETE(
     );
   }
 }
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    await dbConnect()
+    const { id } = params
+    const body = await req.json()
+
+    const patiente = await Patiente.findById(id).populate("userId")
+    if (!patiente) {
+      return NextResponse.json(
+        { message: "Patiente introuvable" },
+        { status: 404 }
+      )
+    }
+
+    const userUpdate = {
+      nom: body.nom,
+      prenom: body.prenom,
+      email: body.email
+    }
+
+    await User.findByIdAndUpdate(patiente.userId._id, userUpdate)
+
+    // ID dossier NON modifié
+    // patiente.idDossierMedical reste comme il est
+
+    patiente.dateDeNaissance = new Date(body.dateDeNaissance)
+    await patiente.save()
+    await patiente.populate("userId", "nom prenom email email")
+
+    return NextResponse.json(
+      { message: "Patiente mise à jour", patiente },
+      { status: 200 }
+    )
+
+  } catch (error) {
+    return NextResponse.json(
+      { message: "Erreur lors de la mise à jour", error: String(error) },
+      { status: 500 }
+    )
+  }
+}
+
+
+
+
+

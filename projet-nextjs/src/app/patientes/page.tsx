@@ -34,6 +34,8 @@ export default function PatientesPage() {
     idDossierMedical: "",
     dateDeNaissance: "",
   });
+  const [editingId, setEditingId] = useState<string | null>(null);
+
 
   useEffect(() => {
     const nom = localStorage.getItem("nom") || "";
@@ -88,11 +90,27 @@ export default function PatientesPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleEditClick = (p: PatienteData) => {
+  setFormData({
+    nom: p.userId?.nom || "",
+    prenom: p.userId?.prenom || "",
+    email: p.userId?.email || "",
+    password: "", // mot de passe vide pour modification
+    idDossierMedical: p.idDossierMedical,
+    dateDeNaissance: p.dateDeNaissance
+      ? new Date(p.dateDeNaissance).toISOString().split("T")[0]
+      : "",
+  });
+  setEditingId(p._id);
+  setErrorMessage("");
+  setShowForm(true);
+};
+
+// Modification du handleFormSubmit
 const handleFormSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setErrorMessage("");
 
-  // Vérification de la date de naissance future
   if (formData.dateDeNaissance) {
     const selectedDate = new Date(formData.dateDeNaissance);
     const today = new Date();
@@ -103,8 +121,11 @@ const handleFormSubmit = async (e: React.FormEvent) => {
   }
 
   try {
-    const res = await fetch("/api/patientes", {
-      method: "POST",
+    const url = editingId ? `/api/patientes/${editingId}` : "/api/patientes";
+    const method = editingId ? "PUT" : "POST";
+
+    const res = await fetch(url, {
+      method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
     });
@@ -112,7 +133,13 @@ const handleFormSubmit = async (e: React.FormEvent) => {
     const data = await res.json();
 
     if (res.ok) {
-      setPatientes((prev) => [...prev, data.patiente]);
+      if (editingId) {
+        setPatientes((prev) =>
+          prev.map((p) => (p._id === editingId ? data.patiente : p))
+        );
+      } else {
+        setPatientes((prev) => [...prev, data.patiente]);
+      }
       setFormData({
         nom: "",
         prenom: "",
@@ -122,15 +149,12 @@ const handleFormSubmit = async (e: React.FormEvent) => {
         dateDeNaissance: "",
       });
       setShowForm(false);
+      setEditingId(null);
     } else {
-      if (data.message.includes("ID dossier déjà utilisé")) {
-        setErrorMessage("Une patiente existe déjà avec cet ID de dossier médical");
-      } else {
-        setErrorMessage(data.message || "Erreur lors de l'ajout");
-      }
+      setErrorMessage(data.message || "Erreur lors de l'opération");
     }
   } catch {
-    setErrorMessage("Erreur réseau lors de l'ajout");
+    setErrorMessage("Erreur réseau");
   }
 };
 
@@ -195,10 +219,12 @@ const handleFormSubmit = async (e: React.FormEvent) => {
                   </td>
 
                   <td className="border px-4 py-2 flex gap-2">
-                    <button className="bg-pink-400 text-white px-2 py-1 rounded hover:bg-pink-500 flex-1">
+                    <button
+                      onClick={() => handleEditClick(p)}
+                      className="bg-pink-400 text-white px-2 py-1 rounded hover:bg-pink-500 flex-1"
+                    >
                       Modifier
                     </button>
-
                     <button
                       onClick={() => {
                         setDeleteId(p._id);
@@ -279,14 +305,14 @@ const handleFormSubmit = async (e: React.FormEvent) => {
                   </button>
                 </div>
 
-                <input
-                  type="text"
-                  name="idDossierMedical"
-                  placeholder="ID Dossier médical"
-                  value={formData.idDossierMedical}
-                  onChange={handleFormChange}
-                  className="px-3 py-2 border border-pink-300 rounded focus:ring-2 focus:ring-pink-400"
-                />
+<input
+  type="text"
+  name="idDossierMedical"
+  value={formData.idDossierMedical}
+  readOnly
+  className="px-3 py-2 border border-pink-300 rounded bg-gray-100"
+/>
+
               </div>
 
               <label className="flex flex-col text-pink-700">
