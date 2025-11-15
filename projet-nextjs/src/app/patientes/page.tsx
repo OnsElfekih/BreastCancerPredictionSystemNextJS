@@ -90,21 +90,21 @@ export default function PatientesPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleEditClick = (p: PatienteData) => {
+const handleEditClick = (p: PatienteData) => {
   setFormData({
     nom: p.userId?.nom || "",
     prenom: p.userId?.prenom || "",
     email: p.userId?.email || "",
-    password: "", // mot de passe vide pour modification
-    idDossierMedical: p.idDossierMedical,
+    password: "",  
+    idDossierMedical: p.idDossierMedical, // affiché
     dateDeNaissance: p.dateDeNaissance
       ? new Date(p.dateDeNaissance).toISOString().split("T")[0]
-      : "",
-  });
-  setEditingId(p._id);
-  setErrorMessage("");
-  setShowForm(true);
-};
+      : ""
+  })
+  setEditingId(p._id)
+  setShowForm(true)
+}
+
 
 // Modification du handleFormSubmit
 const handleFormSubmit = async (e: React.FormEvent) => {
@@ -124,11 +124,12 @@ const handleFormSubmit = async (e: React.FormEvent) => {
     const url = editingId ? `/api/patientes/${editingId}` : "/api/patientes";
     const method = editingId ? "PUT" : "POST";
 
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
+const res = await fetch(url, {
+  method,
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(formData)
+})
+
 
     const data = await res.json();
 
@@ -287,23 +288,24 @@ const handleFormSubmit = async (e: React.FormEvent) => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    placeholder="Mot de passe"
-                    value={formData.password}
-                    onChange={handleFormChange}
-                    className="px-3 py-2 border border-pink-300 rounded w-full focus:ring-2 focus:ring-pink-400 pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-2.5 text-gray-500 hover:text-pink-600"
-                  >
-                    {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
-                  </button>
-                </div>
+<div className="relative">
+  <input
+    type={showPassword ? "text" : "password"}
+    name="password"
+    placeholder="Nouveau mot de passe"
+    value={formData.password}
+    onChange={handleFormChange}
+    className="px-3 py-2 border border-pink-300 rounded w-full"
+  />
+  <button
+    type="button"
+    onClick={() => setShowPassword(!showPassword)}
+    className="absolute right-2 top-2 text-gray-600"
+  >
+    {showPassword ? <EyeSlashIcon className="w-5"/> : <EyeIcon className="w-5" />}
+  </button>
+</div>
+
 
 <input
   type="text"
