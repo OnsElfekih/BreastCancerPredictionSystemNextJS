@@ -1,89 +1,74 @@
-import { NextRequest, NextResponse } from "next/server"
-import { dbConnect } from "@/lib/mongodb"
-import User from "@/models/User"
-import Patiente from "@/models/IPatiente"
-import bcrypt from "bcryptjs"
+import { NextRequest, NextResponse } from "next/server";
+import { dbConnect } from "@/lib/mongodb";
+import Patiente from "@/models/IPatiente";
+import User from "@/models/User";
+import bcrypt from "bcryptjs";
+import { verifyToken } from "@/lib/auth";
 
-/* ----------------------- DELETE ---------------------- */
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+/* ---------- PUT ---------- */
+export async function PUT(req: NextRequest, { params }: any) {
   try {
-    await dbConnect()
+    await dbConnect();
 
-    const { id } = await params
+    const { id } = params;
+    const user = verifyToken(req);
+    if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    const patiente = await Patiente.findById(id)
+    const body = await req.json();
+
+    const patiente = await Patiente.findOne({ _id: id, gynecoId: user.userId })
+      .populate("userId");
+
     if (!patiente) {
-      return NextResponse.json(
-        { message: "Patiente introuvable" },
-        { status: 404 }
-      )
+      return NextResponse.json({ message: "Patiente introuvable" }, { status: 404 });
     }
 
-    const userId = patiente.userId
-
-    await Patiente.findByIdAndDelete(id)
-    if (userId) await User.findByIdAndDelete(userId)
-
-    return NextResponse.json(
-      { message: "Patiente et utilisateur supprimés" },
-      { status: 200 }
-    )
-  } catch (error) {
-    return NextResponse.json(
-      { message: "Erreur suppression", error: String(error) },
-      { status: 500 }
-    )
-  }
-}
-
-/* ----------------------- UPDATE PUT ---------------------- */
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    await dbConnect()
-    const { id } = await params
-    const body = await req.json()
-
-    const patiente = await Patiente.findById(id).populate("userId")
-    if (!patiente) {
-      return NextResponse.json(
-        { message: "Patiente introuvable" },
-        { status: 404 }
-      )
-    }
-
-    const userUpdate: any = {
+    const updates: any = {
       nom: body.nom,
       prenom: body.prenom,
       email: body.email
-    }
+    };
 
     if (body.password && body.password.trim() !== "") {
-      const hash = await bcrypt.hash(body.password, 10)
-      userUpdate.password = hash
+      updates.password = await bcrypt.hash(body.password, 10);
     }
 
-    await User.findByIdAndUpdate(patiente.userId._id, userUpdate)
+    await User.findByIdAndUpdate(patiente.userId._id, updates);
 
-    patiente.idDossierMedical = body.idDossierMedical
-    patiente.dateDeNaissance = new Date(body.dateDeNaissance)
+    patiente.idDossierMedical = body.idDossierMedical;
+    patiente.dateDeNaissance = new Date(body.dateDeNaissance);
 
-    await patiente.save()
-    await patiente.populate("userId", "nom prenom email")
+    await patiente.save();
 
-    return NextResponse.json(
-      { message: "Patiente mise à jour", patiente },
-      { status: 200 }
-    )
-  } catch (error) {
-    return NextResponse.json(
-      { message: "Erreur mise à jour", error: String(error) },
-      { status: 500 }
-    )
+    const full = await patiente.populate("userId", "nom prenom email");
+
+    return NextResponse.json({ message: "Patiente mise à jour", patiente: full }, { status: 200 });
+  } catch (e: any) {
+    return NextResponse.json({ message: "Erreur mise à jour" }, { status: 500 });
+  }
+}
+
+/* ---------- DELETE ---------- */
+export async function DELETE(req: NextRequest, { params }: any) {
+  try {
+    await dbConnect();
+
+    const { id } = params;
+    const user = verifyToken(req);
+    if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
+    const patiente = await Patiente.findOne({ _id: id, gynecoId: user.userId });
+    if (!patiente) {
+      return NextResponse.json({ message: "Patiente introuvable" }, { status: 404 });
+    }
+
+    const userId = patiente.userId;
+
+    await Patiente.findByIdAndDelete(id);
+    await User.findByIdAndDelete(userId);
+
+    return NextResponse.json({ message: "Patiente supprimée" }, { status: 200 });
+  } catch (e: any) {
+    return NextResponse.json({ message: "Erreur suppression" }, { status: 500 });
   }
 }

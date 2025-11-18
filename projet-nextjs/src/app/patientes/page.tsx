@@ -43,10 +43,19 @@ export default function PatientesPage() {
     loadPatientes();
   }, []);
 
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+    return headers;
+  };
+
   const loadPatientes = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/patientes");
+      const res = await fetch("/api/patientes", { headers: getAuthHeaders() });
       if (!res.ok) {
         setPatientes([]);
         setLoading(false);
@@ -63,31 +72,20 @@ export default function PatientesPage() {
 
   const handleDelete = async () => {
     if (!deleteId) return;
-
     try {
       const res = await fetch(`/api/patientes/${deleteId}`, {
         method: "DELETE",
+        headers: getAuthHeaders(),
       });
-
-      if (res.ok) {
-        setPatientes((prev) => prev.filter((p) => p._id !== deleteId));
-      }
+      if (res.ok) setPatientes((prev) => prev.filter((p) => p._id !== deleteId));
     } catch {}
-
     setShowDelete(false);
     setDeleteId(null);
   };
 
   const handleAddClick = () => {
     setErrorMessage("");
-    setFormData({
-      nom: "",
-      prenom: "",
-      email: "",
-      password: "",
-      idDossierMedical: "",
-      dateDeNaissance: "",
-    });
+    setFormData({ nom: "", prenom: "", email: "", password: "", idDossierMedical: "", dateDeNaissance: "" });
     setEditingId(null);
     setShowForm(true);
   };
@@ -98,7 +96,7 @@ export default function PatientesPage() {
       prenom: p.userId?.prenom || "",
       email: p.userId?.email || "",
       password: "",
-      idDossierMedical: p.idDossierMedical, // affiché en lecture seule
+      idDossierMedical: p.idDossierMedical,
       dateDeNaissance: p.dateDeNaissance
         ? new Date(p.dateDeNaissance).toISOString().split("T")[0]
         : "",
@@ -111,50 +109,42 @@ export default function PatientesPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-const handleFormSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setErrorMessage("");
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage("");
 
-  if (formData.dateDeNaissance) {
-    const selectedDate = new Date(formData.dateDeNaissance);
-    if (selectedDate > new Date()) {
-      setErrorMessage("La date de naissance ne peut pas être dans le futur");
-      return;
-    }
-  }
-
-  try {
-    const url = editingId ? `/api/patientes/${editingId}` : "/api/patientes";
-    const method = editingId ? "PUT" : "POST";
-
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      if (editingId) {
-        setPatientes((prev) =>
-          prev.map((p) => (p._id === editingId ? data.patiente : p))
-        );
-      } else {
-        setPatientes((prev) => [...prev, data.patiente]);
+    if (formData.dateDeNaissance) {
+      const selectedDate = new Date(formData.dateDeNaissance);
+      if (selectedDate > new Date()) {
+        setErrorMessage("La date de naissance ne peut pas être dans le futur");
+        return;
       }
-
-      setFormData({ nom: "", prenom: "", email: "", password: "", idDossierMedical: "", dateDeNaissance: "" });
-      setShowForm(false);
-      setEditingId(null);
-    } else {
-      setErrorMessage(data.message || "Erreur lors de l'opération");
     }
-  } catch {
-    setErrorMessage("Erreur réseau");
-  }
-};
 
+    try {
+      const url = editingId ? `/api/patientes/${editingId}` : "/api/patientes";
+      const method = editingId ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: getAuthHeaders(),
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        if (editingId) setPatientes((prev) => prev.map((p) => (p._id === editingId ? data.patiente : p)));
+        else setPatientes((prev) => [...prev, data.patiente]);
+
+        setFormData({ nom: "", prenom: "", email: "", password: "", idDossierMedical: "", dateDeNaissance: "" });
+        setShowForm(false);
+        setEditingId(null);
+      } else setErrorMessage(data.message || "Erreur lors de l'opération");
+    } catch {
+      setErrorMessage("Erreur réseau");
+    }
+  };
 
   const filteredPatientes = patientes.filter(
     (p) =>
@@ -166,13 +156,11 @@ const handleFormSubmit = async (e: React.FormEvent) => {
   return (
     <DashboardLayout user={user}>
       <div className={showForm || showDelete ? "blur-sm pointer-events-none" : ""}>
-        {/* Total patientes */}
         <div className="bg-white shadow-lg rounded-lg p-6 border border-pink-200 w-full max-w-sm mb-6">
           <h2 className="text-lg font-medium text-pink-700 mb-2">Total patientes</h2>
           <p className="text-3xl font-bold text-pink-900">{patientes.length}</p>
         </div>
 
-        {/* Recherche + Ajouter */}
         <div className="flex items-center mb-4 max-w-5xl">
           <input
             type="text"
@@ -189,7 +177,6 @@ const handleFormSubmit = async (e: React.FormEvent) => {
           </button>
         </div>
 
-        {/* Tableau */}
         {loading ? (
           <p>Chargement...</p>
         ) : (
@@ -212,24 +199,13 @@ const handleFormSubmit = async (e: React.FormEvent) => {
                   <td className="border px-4 py-2">{p.userId?.email || "-"}</td>
                   <td className="border px-4 py-2">{p.idDossierMedical}</td>
                   <td className="border px-4 py-2">
-                    {p.dateDeNaissance
-                      ? new Date(p.dateDeNaissance).toLocaleDateString("fr-FR")
-                      : "-"}
+                    {p.dateDeNaissance ? new Date(p.dateDeNaissance).toLocaleDateString("fr-FR") : "-"}
                   </td>
                   <td className="border px-4 py-2 flex gap-2">
-                    <button
-                      onClick={() => handleEditClick(p)}
-                      className="bg-pink-400 text-white px-2 py-1 rounded hover:bg-pink-500 flex-1"
-                    >
+                    <button onClick={() => handleEditClick(p)} className="bg-pink-400 text-white px-2 py-1 rounded hover:bg-pink-500 flex-1">
                       Modifier
                     </button>
-                    <button
-                      onClick={() => {
-                        setDeleteId(p._id);
-                        setShowDelete(true);
-                      }}
-                      className="bg-rose-500 text-white px-2 py-1 rounded hover:bg-rose-600 flex-1"
-                    >
+                    <button onClick={() => { setDeleteId(p._id); setShowDelete(true); }} className="bg-rose-500 text-white px-2 py-1 rounded hover:bg-rose-600 flex-1">
                       Supprimer
                     </button>
                   </td>
@@ -240,138 +216,52 @@ const handleFormSubmit = async (e: React.FormEvent) => {
         )}
       </div>
 
-      {/* ----------- MODAL AJOUT / MODIF ------------ */}
       {showForm && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black/30"></div>
           <div className="relative bg-white shadow-md rounded-lg p-6 border border-pink-200 w-full max-w-3xl z-50">
-            <h3 className="text-xl font-semibold text-pink-700 mb-4">
-              {editingId ? "Modifier patiente" : "Ajouter une nouvelle patiente"}
-            </h3>
-
-            {errorMessage && (
-              <div className="bg-red-100 text-red-700 p-2 rounded mb-2">
-                {errorMessage}
-              </div>
-            )}
-
+            <h3 className="text-xl font-semibold text-pink-700 mb-4">{editingId ? "Modifier patiente" : "Ajouter une nouvelle patiente"}</h3>
+            {errorMessage && <div className="bg-red-100 text-red-700 p-2 rounded mb-2">{errorMessage}</div>}
             <form onSubmit={handleFormSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <input
-                  type="text"
-                  name="nom"
-                  placeholder="Nom"
-                  value={formData.nom}
-                  onChange={handleFormChange}
-                  className="px-3 py-2 border border-pink-300 rounded focus:ring-2 focus:ring-pink-400"
-                />
-                <input
-                  type="text"
-                  name="prenom"
-                  placeholder="Prénom"
-                  value={formData.prenom}
-                  onChange={handleFormChange}
-                  className="px-3 py-2 border border-pink-300 rounded focus:ring-2 focus:ring-pink-400"
-                />
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Email"
-                  value={formData.email}
-                  onChange={handleFormChange}
-                  className="px-3 py-2 border border-pink-300 rounded focus:ring-2 focus:ring-pink-400"
-                />
+                <input type="text" name="nom" placeholder="Nom" value={formData.nom} onChange={handleFormChange} className="px-3 py-2 border border-pink-300 rounded focus:ring-2 focus:ring-pink-400" />
+                <input type="text" name="prenom" placeholder="Prénom" value={formData.prenom} onChange={handleFormChange} className="px-3 py-2 border border-pink-300 rounded focus:ring-2 focus:ring-pink-400" />
+                <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleFormChange} className="px-3 py-2 border border-pink-300 rounded focus:ring-2 focus:ring-pink-400" />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    placeholder="Mot de passe"
-                    value={formData.password}
-                    onChange={handleFormChange}
-                    className="px-3 py-2 border border-pink-300 rounded w-full"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-2 top-2 text-gray-600"
-                  >
-                    {showPassword ? <EyeSlashIcon className="w-5"/> : <EyeIcon className="w-5" />}
+                  <input type={showPassword ? "text" : "password"} name="password" placeholder="Mot de passe" value={formData.password} onChange={handleFormChange} className="px-3 py-2 border border-pink-300 rounded w-full" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-2 top-2 text-gray-600">
+                    {showPassword ? <EyeSlashIcon className="w-5" /> : <EyeIcon className="w-5" />}
                   </button>
                 </div>
-
-<input
-  type="text"
-  name="idDossierMedical"
-  value={formData.idDossierMedical}
-  readOnly={!!editingId} // lecture seule uniquement en modification
-  placeholder="ID Dossier Medical"
-  onChange={handleFormChange} // obligatoire pour saisir
-  required={!editingId} // champ obligatoire seulement en ajout
-  className={`px-3 py-2 border rounded w-full ${
-    editingId ? "bg-gray-100" : "bg-white"
-  } border-pink-300`}
-/>
-
+                <input type="text" name="idDossierMedical" value={formData.idDossierMedical} readOnly={!!editingId} placeholder="ID Dossier Medical" onChange={handleFormChange} required={!editingId} className={`px-3 py-2 border rounded w-full ${editingId ? "bg-gray-100" : "bg-white"} border-pink-300`} />
               </div>
 
               <label className="flex flex-col text-pink-700">
                 Date de naissance
-                <input
-                  type="date"
-                  name="dateDeNaissance"
-                  value={formData.dateDeNaissance}
-                  onChange={handleFormChange}
-                  className="mt-1 px-3 py-2 border border-pink-300 rounded focus:ring-2 focus:ring-pink-400"
-                />
+                <input type="date" name="dateDeNaissance" value={formData.dateDeNaissance} onChange={handleFormChange} className="mt-1 px-3 py-2 border border-pink-300 rounded focus:ring-2 focus:ring-pink-400" />
               </label>
 
               <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  className="px-4 py-2 border rounded bg-gray-200 hover:bg-gray-300"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-pink-500 text-white rounded hover:bg-pink-600"
-                >
-                  Enregistrer
-                </button>
+                <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border rounded bg-gray-200 hover:bg-gray-300">Annuler</button>
+                <button type="submit" className="px-6 py-2 bg-pink-500 text-white rounded hover:bg-pink-600">Enregistrer</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* ----------- MODAL SUPPRESSION ------------ */}
       {showDelete && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black/30"></div>
           <div className="relative bg-white shadow-lg rounded-lg p-6 border border-pink-300 w-full max-w-md z-50">
-            <h3 className="text-lg font-semibold text-pink-700 mb-4">
-              Confirmer la suppression
-            </h3>
-            <p className="text-gray-700 mb-6">
-              Voulez-vous vraiment supprimer cette patiente ?
-            </p>
+            <h3 className="text-lg font-semibold text-pink-700 mb-4">Confirmer la suppression</h3>
+            <p className="text-gray-700 mb-6">Voulez-vous vraiment supprimer cette patiente ?</p>
             <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setShowDelete(false)}
-                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={handleDelete}
-                className="px-4 py-2 bg-rose-500 text-white rounded hover:bg-rose-600"
-              >
-                Supprimer
-              </button>
+              <button onClick={() => setShowDelete(false)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Annuler</button>
+              <button onClick={handleDelete} className="px-4 py-2 bg-rose-500 text-white rounded hover:bg-rose-600">Supprimer</button>
             </div>
           </div>
         </div>

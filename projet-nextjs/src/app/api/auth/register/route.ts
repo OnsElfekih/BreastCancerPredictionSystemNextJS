@@ -12,25 +12,33 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ error: "Tous les champs sont obligatoires" }), { status: 400 });
     }
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return new Response(JSON.stringify({ error: "User already exists" }), { status: 400 });
+    const exist = await User.findOne({ email });
+    if (exist) {
+      return new Response(JSON.stringify({ error: "Email déjà utilisé" }), { status: 400 });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hash = await bcrypt.hash(password, 10);
 
-    const newUser = new User({ nom, prenom, email, password: hashedPassword, role });
-    await newUser.save();
+    const user = await User.create({
+      nom,
+      prenom,
+      email,
+      password: hash,
+      role
+    });
 
-    return new Response(JSON.stringify({
-      message: "User registered successfully",
-      userId: newUser._id,
-      nom: newUser.nom,
-      prenom: newUser.prenom,
-      role: newUser.role
-    }), { status: 201, headers: { "Content-Type": "application/json" }});
-  } catch (error: any) {
-    console.error(error);
-    return new Response(JSON.stringify({ error: error.message || "Erreur serveur" }), { status: 500 });
+    return new Response(
+      JSON.stringify({
+        message: "Utilisateur créé",
+        userId: user._id,
+        nom: user.nom,
+        prenom: user.prenom,
+        role: user.role
+      }),
+      { status: 201, headers: { "Content-Type": "application/json" } }
+    );
+
+  } catch (e: any) {
+    return new Response(JSON.stringify({ error: "Erreur serveur" }), { status: 500 });
   }
 }
