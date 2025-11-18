@@ -2,7 +2,6 @@
 import { ReactNode, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
-// Icônes
 export const GridIcon = () => (
   <svg width="24" height="24" fill="currentColor">
     <rect x="3" y="3" width="8" height="8" />
@@ -36,14 +35,7 @@ export const TableIcon = () => (
 );
 
 export const SignOutIcon = () => (
-  <svg
-    width="20"
-    height="20"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    viewBox="0 0 24 24"
-  >
+  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -52,7 +44,6 @@ export const SignOutIcon = () => (
   </svg>
 );
 
-// Props
 interface LayoutProps {
   children: ReactNode;
   user: { nom: string; prenom: string };
@@ -87,42 +78,31 @@ export default function DashboardLayout({ children, user }: LayoutProps) {
 
   return (
     <div className="flex h-screen bg-gray-100 text-black">
-      {/* Sidebar */}
-      <div
-        className={`bg-gray-900 text-white w-64 p-4 transition-all ${
-          sidebarOpen ? "block" : "hidden"
-        }`}
-      >
+      <div className={`bg-gray-900 text-white w-64 p-4 transition-all ${sidebarOpen ? "block" : "hidden"}`}>
         <h2 className="text-xl font-bold mb-6">Menu</h2>
-<ul>
-  {navItems.map((item, index) => (
-    <li key={index} className="flex items-center gap-2 p-2 hover:bg-gray-700 rounded cursor-pointer">
-      {item.icon}
-      <Link href={item.path}>
-        <span>{item.name}</span>
-      </Link>
-    </li>
-  ))}
-</ul>
+        <ul>
+          {navItems.map((item, index) => (
+            <li
+              key={index}
+              className="flex items-center gap-2 p-2 hover:bg-gray-700 rounded cursor-pointer"
+            >
+              {item.icon}
+              <Link href={item.path}>
+                <span>{item.name}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
 
-      {/* Main content */}
       <div className="flex-1 flex flex-col">
-        {/* Navbar */}
         <div className="bg-white shadow p-4 flex justify-between items-center">
-          {/* Sidebar Toggle */}
           <button
             className="flex items-center justify-center w-10 h-10 text-black border rounded-lg hover:bg-gray-200"
             aria-label="Toggle Sidebar"
             onClick={() => setSidebarOpen(!sidebarOpen)}
           >
-            <svg
-              width="16"
-              height="12"
-              viewBox="0 0 16 12"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
+            <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
               <path
                 fillRule="evenodd"
                 clipRule="evenodd"
@@ -132,7 +112,6 @@ export default function DashboardLayout({ children, user }: LayoutProps) {
             </svg>
           </button>
 
-          {/* User Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -156,7 +135,6 @@ export default function DashboardLayout({ children, user }: LayoutProps) {
           </div>
         </div>
 
-        {/* Content */}
         <div className="flex-1 p-6 bg-gray-100">{children}</div>
       </div>
     </div>

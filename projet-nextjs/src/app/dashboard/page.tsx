@@ -11,9 +11,16 @@ export default function Dashboard() {
     const prenom = localStorage.getItem("prenom") || "";
     setUser({ nom, prenom });
 
-    fetch("/api/patientes")
+    const token = localStorage.getItem("token");
+
+    fetch("/api/patientes", {
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    })
       .then(res => res.json())
-      .then(data => setTotalPatientes(data.length))
+      .then(data => setTotalPatientes(Array.isArray(data) ? data.length : 0))
       .catch(() => setTotalPatientes(0));
   }, []);
 
