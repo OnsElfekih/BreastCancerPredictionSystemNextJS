@@ -7,12 +7,14 @@ interface PatienteData {
   _id: string;
   idDossierMedical: string;
   dateDeNaissance: string;
+  visites?: number;
   userId?: {
     nom?: string;
     prenom?: string;
     email?: string;
   } | null;
 }
+
 
 export default function PatientesPage() {
   const [user, setUser] = useState({ nom: "", prenom: "" });
@@ -25,14 +27,16 @@ export default function PatientesPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const [formData, setFormData] = useState({
-    nom: "",
-    prenom: "",
-    email: "",
-    password: "",
-    idDossierMedical: "",
-    dateDeNaissance: "",
-  });
+const [formData, setFormData] = useState({
+  nom: "",
+  prenom: "",
+  email: "",
+  password: "",
+  idDossierMedical: "",
+  dateDeNaissance: "",
+  visites: 1
+});
+
 
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -83,27 +87,38 @@ export default function PatientesPage() {
     setDeleteId(null);
   };
 
-  const handleAddClick = () => {
-    setErrorMessage("");
-    setFormData({ nom: "", prenom: "", email: "", password: "", idDossierMedical: "", dateDeNaissance: "" });
-    setEditingId(null);
-    setShowForm(true);
-  };
+const handleAddClick = () => {
+  setErrorMessage("");
+  setFormData({ 
+    nom: "", 
+    prenom: "", 
+    email: "", 
+    password: "", 
+    idDossierMedical: "", 
+    dateDeNaissance: "", 
+    visites: 1 
+  });
+  setEditingId(null);
+  setShowForm(true);
+};
 
-  const handleEditClick = (p: PatienteData) => {
-    setFormData({
-      nom: p.userId?.nom || "",
-      prenom: p.userId?.prenom || "",
-      email: p.userId?.email || "",
-      password: "",
-      idDossierMedical: p.idDossierMedical,
-      dateDeNaissance: p.dateDeNaissance
-        ? new Date(p.dateDeNaissance).toISOString().split("T")[0]
-        : "",
-    });
-    setEditingId(p._id);
-    setShowForm(true);
-  };
+
+const handleEditClick = (p: PatienteData & { visites?: number }) => {
+  setFormData({
+    nom: p.userId?.nom || "",
+    prenom: p.userId?.prenom || "",
+    email: p.userId?.email || "",
+    password: "",
+    idDossierMedical: p.idDossierMedical,
+    dateDeNaissance: p.dateDeNaissance
+      ? new Date(p.dateDeNaissance).toISOString().split("T")[0]
+      : "",
+    visites: p.visites || 1
+  });
+  setEditingId(p._id);
+  setShowForm(true);
+};
+
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -137,7 +152,16 @@ export default function PatientesPage() {
         if (editingId) setPatientes((prev) => prev.map((p) => (p._id === editingId ? data.patiente : p)));
         else setPatientes((prev) => [...prev, data.patiente]);
 
-        setFormData({ nom: "", prenom: "", email: "", password: "", idDossierMedical: "", dateDeNaissance: "" });
+        setFormData({ 
+  nom: "", 
+  prenom: "", 
+  email: "", 
+  password: "", 
+  idDossierMedical: "", 
+  dateDeNaissance: "", 
+  visites: 1
+});
+
         setShowForm(false);
         setEditingId(null);
       } else setErrorMessage(data.message || "Erreur lors de l'opération");
@@ -181,37 +205,36 @@ export default function PatientesPage() {
           <p>Chargement...</p>
         ) : (
           <table className="w-full border border-pink-200 bg-white rounded">
-            <thead className="bg-pink-50">
-              <tr>
-                <th className="border px-4 py-2 text-pink-700">Nom</th>
-                <th className="border px-4 py-2 text-pink-700">Prénom</th>
-                <th className="border px-4 py-2 text-pink-700">Email</th>
-                <th className="border px-4 py-2 text-pink-700">ID Dossier</th>
-                <th className="border px-4 py-2 text-pink-700">Date</th>
-                <th className="border px-4 py-2 text-pink-700">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPatientes.map((p) => (
-                <tr key={p._id}>
-                  <td className="border px-4 py-2">{p.userId?.nom || "-"}</td>
-                  <td className="border px-4 py-2">{p.userId?.prenom || "-"}</td>
-                  <td className="border px-4 py-2">{p.userId?.email || "-"}</td>
-                  <td className="border px-4 py-2">{p.idDossierMedical}</td>
-                  <td className="border px-4 py-2">
-                    {p.dateDeNaissance ? new Date(p.dateDeNaissance).toLocaleDateString("fr-FR") : "-"}
-                  </td>
-                  <td className="border px-4 py-2 flex gap-2">
-                    <button onClick={() => handleEditClick(p)} className="bg-pink-400 text-white px-2 py-1 rounded hover:bg-pink-500 flex-1">
-                      Modifier
-                    </button>
-                    <button onClick={() => { setDeleteId(p._id); setShowDelete(true); }} className="bg-rose-500 text-white px-2 py-1 rounded hover:bg-rose-600 flex-1">
-                      Supprimer
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+<thead className="bg-pink-50">
+  <tr>
+    <th className="border px-4 py-2 text-pink-700">Nom</th>
+    <th className="border px-4 py-2 text-pink-700">Prénom</th>
+    <th className="border px-4 py-2 text-pink-700">Email</th>
+    <th className="border px-4 py-2 text-pink-700">ID Dossier</th>
+    <th className="border px-4 py-2 text-pink-700">Date</th>
+    <th className="border px-4 py-2 text-pink-700">Visites</th>
+    <th className="border px-4 py-2 text-pink-700">Action</th>
+  </tr>
+</thead>
+<tbody>
+  {filteredPatientes.map((p) => (
+    <tr key={p._id}>
+      <td className="border px-4 py-2">{p.userId?.nom}</td>
+      <td className="border px-4 py-2">{p.userId?.prenom}</td>
+      <td className="border px-4 py-2">{p.userId?.email}</td>
+      <td className="border px-4 py-2">{p.idDossierMedical}</td>
+      <td className="border px-4 py-2">
+        {p.dateDeNaissance ? new Date(p.dateDeNaissance).toLocaleDateString("fr-FR") : "-"}
+      </td>
+      <td className="border px-4 py-2">{p.visites || 0}</td>
+      <td className="border px-4 py-2 flex gap-2">
+        <button onClick={() => handleEditClick(p)} className="bg-pink-400 text-white px-2 py-1 rounded hover:bg-pink-500 flex-1">Modifier</button>
+        <button onClick={() => { setDeleteId(p._id); setShowDelete(true); }} className="bg-rose-500 text-white px-2 py-1 rounded hover:bg-rose-600 flex-1">Supprimer</button>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
           </table>
         )}
       </div>
@@ -243,6 +266,30 @@ export default function PatientesPage() {
                 Date de naissance
                 <input type="date" name="dateDeNaissance" value={formData.dateDeNaissance} onChange={handleFormChange} className="mt-1 px-3 py-2 border border-pink-300 rounded focus:ring-2 focus:ring-pink-400" />
               </label>
+              <div className="flex items-center gap-2">
+  <label className="flex flex-col text-pink-700">
+    Visites
+    <div className="flex items-center gap-2 mt-1">
+      <input
+        type="number"
+        name="visites"
+        value={formData.visites || 1}
+        readOnly
+        className="px-3 py-2 border rounded w-20"
+      />
+      <button
+        type="button"
+        onClick={() =>
+          setFormData({ ...formData, visites: (formData.visites || 1) + 1 })
+        }
+        className="px-2 py-1 bg-pink-500 text-white rounded"
+      >
+        +
+      </button>
+    </div>
+  </label>
+</div>
+
 
               <div className="flex justify-end gap-2">
                 <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border rounded bg-gray-200 hover:bg-gray-300">Annuler</button>
