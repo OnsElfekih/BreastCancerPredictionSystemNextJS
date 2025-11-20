@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import DashboardLayout from "./DashboardLayout";
+import VisitesChart from "./VisiteChart";
 
 export default function Dashboard() {
   const [user, setUser] = useState({ nom: "", prenom: "" });
@@ -35,6 +36,10 @@ export default function Dashboard() {
         <h2 className="text-lg font-medium text-pink-700 mb-2">Total patientes</h2>
         <p className="text-3xl font-bold text-pink-900">{totalPatientes}</p>
       </div>
+  <div className="bg-white shadow-lg rounded-lg p-6 border mb-6">
+    <h2 className="text-lg font-medium text-black mb-2">Visites nouvelles vs récurrentes</h2>
+    <VisitesChart />
+  </div>
     </DashboardLayout>
   );
 }

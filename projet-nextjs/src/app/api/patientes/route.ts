@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import { verifyToken } from "@/lib/auth";
 import { Types } from "mongoose";
 
-/* ---------- GET ---------- */
+/* ---------- GET : liste des patientes ---------- */
 export async function GET(req: NextRequest) {
   try {
     await dbConnect();
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-/* ---------- POST ---------- */
+/* ---------- POST : créer une patiente ---------- */
 export async function POST(req: NextRequest) {
   try {
     await dbConnect();
@@ -32,7 +32,8 @@ export async function POST(req: NextRequest) {
 
     const requiredFields = ["nom", "prenom", "email", "password", "idDossierMedical", "dateDeNaissance"];
     for (const field of requiredFields) {
-      if (!body[field]) return NextResponse.json({ message: `Le champ ${field} est obligatoire` }, { status: 400 });
+      if (!body[field])
+        return NextResponse.json({ message: `Le champ ${field} est obligatoire` }, { status: 400 });
     }
 
     let user = await User.findOne({ email: body.email });
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-/* ---------- PUT ---------- */
+/* ---------- PUT : mettre à jour une patiente ---------- */
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await dbConnect();
@@ -104,7 +105,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 }
 
-/* ---------- DELETE ---------- */
+/* ---------- DELETE : supprimer une patiente ---------- */
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await dbConnect();
