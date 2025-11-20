@@ -57,8 +57,8 @@ export default function DashboardLayout({ children, user }: LayoutProps) {
   const navItems = [
     { icon: <GridIcon />, name: "Dashboard", path: "/dashboard" },
     { icon: <UserCircleIcon />, name: "Patientes", path: "/patientes" },
-    { icon: <PageIcon />, name: "Rapports médicaux", path: "/rapports" },
-    { icon: <TableIcon />, name: "Données cliniques", path: "/donnees-cliniques" },
+    { icon: <TableIcon />, name: "Données Cliniques", path: "/donnees_cliniques" },
+    { icon: <PageIcon />, name: "Rapports Médicaux", path: "/rapports" },
   ];
 
   useEffect(() => {
@@ -77,7 +77,7 @@ export default function DashboardLayout({ children, user }: LayoutProps) {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100 text-black">
+    <div className="flex h-screen overflow-hidden bg-gray-100 text-black">
       <div className={`bg-gray-900 text-white w-64 p-4 transition-all ${sidebarOpen ? "block" : "hidden"}`}>
         <h2 className="text-xl font-bold mb-6">Menu</h2>
         <ul>
@@ -95,7 +95,7 @@ export default function DashboardLayout({ children, user }: LayoutProps) {
         </ul>
       </div>
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <div className="bg-white shadow p-4 flex justify-between items-center">
           <button
             className="flex items-center justify-center w-10 h-10 text-black border rounded-lg hover:bg-gray-200"
@@ -135,7 +135,9 @@ export default function DashboardLayout({ children, user }: LayoutProps) {
           </div>
         </div>
 
-        <div className="flex-1 p-6 bg-gray-100">{children}</div>
+      <div className="flex-1 p-6 bg-gray-100 overflow-hidden">
+        {children}
+      </div>
       </div>
     </div>
   );

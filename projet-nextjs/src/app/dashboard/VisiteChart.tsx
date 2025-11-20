@@ -33,6 +33,12 @@ export default function VisitesChart() {
       { label: "Récurrentes", data: [data.visitesRecurrentes], backgroundColor: "#3b82f6" }
     ]
   };
+const options = {
+  responsive: true,
+  maintainAspectRatio: false, // permet de définir taille exacte
+  plugins: { legend: { position: "top" as const } },
+  scales: { y: { beginAtZero: true } }
+};
 
   return <Bar data={chartData} options={{ responsive: true, plugins: { legend: { position: "top" } } }} />;
 }

@@ -36,10 +36,13 @@ export default function Dashboard() {
         <h2 className="text-lg font-medium text-pink-700 mb-2">Total patientes</h2>
         <p className="text-3xl font-bold text-pink-900">{totalPatientes}</p>
       </div>
-  <div className="bg-white shadow-lg rounded-lg p-6 border mb-6">
-    <h2 className="text-lg font-medium text-black mb-2">Visites nouvelles vs récurrentes</h2>
-    <VisitesChart />
-  </div>
+<div className="bg-white shadow-lg rounded-lg p-2 border mb-6 max-w-md">
+  <h2 className="text-lg font-medium text-black mb-2 text-center">Statistiques des visites patientes</h2>
+<div style={{ width: 400, height: 250 }}>  {/* largeur et hauteur fixes */}
+  <VisitesChart />
+</div>
+</div>
+
     </DashboardLayout>
   );
 }
