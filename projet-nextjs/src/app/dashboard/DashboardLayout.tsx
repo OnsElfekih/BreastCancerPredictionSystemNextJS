@@ -57,7 +57,6 @@ export default function DashboardLayout({ children, user }: LayoutProps) {
   const navItems = [
     { icon: <GridIcon />, name: "Dashboard", path: "/dashboard" },
     { icon: <UserCircleIcon />, name: "Patientes", path: "/patientes" },
-    { icon: <TableIcon />, name: "Données Cliniques", path: "/donnees_cliniques" },
     { icon: <PageIcon />, name: "Rapports Médicaux", path: "/rapports" },
   ];
 

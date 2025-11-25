@@ -12,13 +12,15 @@
     "@heroicons/react": "^2.2.0",
     "bcryptjs": "^3.0.2",
     "chart.js": "^4.5.1",
+    "exceljs": "^4.4.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.553.0",
-    "mongoose": "^8.19.2",
+    "mongoose": "^8.20.0",
     "next": "16.0.0",
     "react": "19.2.0",
     "react-chartjs-2": "^5.3.1",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

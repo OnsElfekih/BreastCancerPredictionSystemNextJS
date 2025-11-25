@@ -228,6 +228,13 @@ const handleEditClick = (p: PatienteData & { visites?: number }) => {
       </td>
       <td className="border px-4 py-2">{p.visites || 0}</td>
       <td className="border px-4 py-2 flex gap-2">
+        <button 
+  onClick={() => window.location.href = `/donneescliniques?id=${p._id}`}
+  className="bg-purple-500 text-white px-2 py-1 rounded hover:bg-purple-600 flex-1"
+>
+  Données cliniques
+</button>
+
         <button onClick={() => handleEditClick(p)} className="bg-pink-400 text-white px-2 py-1 rounded hover:bg-pink-500 flex-1">Modifier</button>
         <button onClick={() => { setDeleteId(p._id); setShowDelete(true); }} className="bg-rose-500 text-white px-2 py-1 rounded hover:bg-rose-600 flex-1">Supprimer</button>
       </td>
@@ -307,6 +314,13 @@ const handleEditClick = (p: PatienteData & { visites?: number }) => {
             <h3 className="text-lg font-semibold text-pink-700 mb-4">Confirmer la suppression</h3>
             <p className="text-gray-700 mb-6">Voulez-vous vraiment supprimer cette patiente ?</p>
             <div className="flex justify-end gap-3">
+            <button
+              onClick={() => window.location.href = `/donneescliniques?id=${deleteId}`}
+              className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 flex-1"
+            >
+              Voir données cliniques
+            </button>
+
               <button onClick={() => setShowDelete(false)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Annuler</button>
               <button onClick={handleDelete} className="px-4 py-2 bg-rose-500 text-white rounded hover:bg-rose-600">Supprimer</button>
             </div>
