@@ -3,6 +3,7 @@ import PDFDocument from "pdfkit";
 import path from "path";
 import { dbConnect } from "@/lib/mongodb";
 import DonneesCliniques from "@/models/IClinicalData";
+import Patiente from "@/models/IPatiente";
 import fs from "fs";
 
 export async function GET(
@@ -16,33 +17,39 @@ export async function GET(
     }
 
     await dbConnect();
+
+    // Récupérer les données cliniques
     const donnee = await DonneesCliniques.findById(id);
     if (!donnee) {
       return NextResponse.json({ error: "Donnée introuvable" }, { status: 404 });
     }
 
-    // Chemin vers ta police TTF
+    // Récupérer la patiente et son userId pour nom/prenom/email
+    const patiente = await Patiente.findById(donnee.patienteId).populate("userId", "nom prenom email");
+    if (!patiente || !patiente.userId) {
+      return NextResponse.json({ error: "Patiente introuvable" }, { status: 404 });
+    }
+    const user = patiente.userId as any;
+
     const fontPath = path.join(process.cwd(), "public/fonts/times.ttf");
     if (!fs.existsSync(fontPath)) {
       return NextResponse.json({ error: "Police introuvable" }, { status: 500 });
     }
 
-    // Création du PDF
     const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
       const chunks: Buffer[] = [];
       const doc = new PDFDocument({ font: fontPath });
 
-      // Charger la police TTF avant toute génération
       doc.font(fontPath);
 
       doc.on("data", (chunk) => chunks.push(chunk));
       doc.on("end", () => resolve(Buffer.concat(chunks)));
       doc.on("error", reject);
 
-      doc.fontSize(18).text("Rapport Médical");
+      doc.fontSize(18).text(`Rapport Médical de la patiente ${user.nom} ${user.prenom}`);
       doc.moveDown();
-      doc.fontSize(12).text(`ID Donnée: ${donnee._id}`);
-      doc.text(`Patiente ID: ${donnee.patienteId}`);
+      doc.text(`Patiente: ${user.nom} ${user.prenom}`);
+      doc.text(`Email: ${user.email}`);
       doc.text(`Age: ${donnee.age}`);
       doc.text(`BMI: ${donnee.BMI}`);
       doc.text(`Glucose: ${donnee.glucose}`);
