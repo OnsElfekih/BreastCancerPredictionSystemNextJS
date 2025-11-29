@@ -124,51 +124,55 @@ const handleEditClick = (p: PatienteData & { visites?: number }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage("");
+const handleFormSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setErrorMessage("");
 
-    if (formData.dateDeNaissance) {
-      const selectedDate = new Date(formData.dateDeNaissance);
-      if (selectedDate > new Date()) {
-        setErrorMessage("La date de naissance ne peut pas être dans le futur");
-        return;
-      }
+  if (formData.dateDeNaissance) {
+    const selectedDate = new Date(formData.dateDeNaissance);
+    if (selectedDate > new Date()) {
+      setErrorMessage("La date de naissance ne peut pas être dans le futur");
+      return;
     }
+  }
 
-    try {
-      const url = editingId ? `/api/patientes/${editingId}` : "/api/patientes";
-      const method = editingId ? "PUT" : "POST";
+  try {
+    const url = editingId ? `/api/patientes/${editingId}` : "/api/patientes";
+    const method = editingId ? "PUT" : "POST";
 
-      const res = await fetch(url, {
-        method,
-        headers: getAuthHeaders(),
-        body: JSON.stringify(formData),
+    // Debug: afficher ce qui est envoyé
+    console.log("Données envoyées:", formData);
+
+    const res = await fetch(url, {
+      method,
+      headers: getAuthHeaders(),
+      body: JSON.stringify(formData),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      if (editingId) setPatientes((prev) => prev.map((p) => (p._id === editingId ? data.patiente : p)));
+      else setPatientes((prev) => [...prev, data.patiente]);
+
+      setFormData({ 
+        nom: "", 
+        prenom: "", 
+        email: "", 
+        password: "", 
+        idDossierMedical: "", 
+        dateDeNaissance: "", 
+        visites: 1
       });
 
-      const data = await res.json();
+      setShowForm(false);
+      setEditingId(null);
+    } else setErrorMessage(data.message || "Erreur lors de l'opération");
+  } catch {
+    setErrorMessage("Erreur réseau");
+  }
+};
 
-      if (res.ok) {
-        if (editingId) setPatientes((prev) => prev.map((p) => (p._id === editingId ? data.patiente : p)));
-        else setPatientes((prev) => [...prev, data.patiente]);
-
-        setFormData({ 
-  nom: "", 
-  prenom: "", 
-  email: "", 
-  password: "", 
-  idDossierMedical: "", 
-  dateDeNaissance: "", 
-  visites: 1
-});
-
-        setShowForm(false);
-        setEditingId(null);
-      } else setErrorMessage(data.message || "Erreur lors de l'opération");
-    } catch {
-      setErrorMessage("Erreur réseau");
-    }
-  };
 
   const filteredPatientes = patientes.filter(
     (p) =>

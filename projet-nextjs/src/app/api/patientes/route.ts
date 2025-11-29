@@ -28,14 +28,21 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     await dbConnect();
+
+    // Vérifier le token avant toute opération
+    const authUser = verifyToken(req);
+    if (!authUser) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
     const body = await req.json();
 
+    // Champs obligatoires
     const requiredFields = ["nom", "prenom", "email", "password", "idDossierMedical", "dateDeNaissance"];
     for (const field of requiredFields) {
       if (!body[field])
         return NextResponse.json({ message: `Le champ ${field} est obligatoire` }, { status: 400 });
     }
 
+    // Chercher si l'utilisateur existe
     let user = await User.findOne({ email: body.email });
     if (!user) {
       user = new User({
@@ -48,9 +55,7 @@ export async function POST(req: NextRequest) {
       await user.save();
     }
 
-    const authUser = verifyToken(req);
-    if (!authUser) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-
+    // Créer la patiente
     const patiente = new Patiente({
       idDossierMedical: body.idDossierMedical,
       dateDeNaissance: new Date(body.dateDeNaissance),
@@ -60,13 +65,17 @@ export async function POST(req: NextRequest) {
     });
 
     await patiente.save();
+
+    // Peupler userId pour le retour
     const fullPatiente = await patiente.populate("userId", "nom prenom email");
 
     return NextResponse.json({ patiente: fullPatiente }, { status: 201 });
   } catch (err: any) {
+    console.error("POST /patientes error:", err);
     return NextResponse.json({ message: "Erreur serveur", error: err.message }, { status: 500 });
   }
 }
+
 
 /* ---------- PUT : mettre à jour une patiente ---------- */
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
