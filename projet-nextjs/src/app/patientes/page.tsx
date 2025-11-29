@@ -318,12 +318,6 @@ const handleFormSubmit = async (e: React.FormEvent) => {
             <h3 className="text-lg font-semibold text-pink-700 mb-4">Confirmer la suppression</h3>
             <p className="text-gray-700 mb-6">Voulez-vous vraiment supprimer cette patiente ?</p>
             <div className="flex justify-end gap-3">
-            <button
-              onClick={() => window.location.href = `/donneescliniques?id=${deleteId}`}
-              className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 flex-1"
-            >
-              Voir données cliniques
-            </button>
 
               <button onClick={() => setShowDelete(false)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Annuler</button>
               <button onClick={handleDelete} className="px-4 py-2 bg-rose-500 text-white rounded hover:bg-rose-600">Supprimer</button>

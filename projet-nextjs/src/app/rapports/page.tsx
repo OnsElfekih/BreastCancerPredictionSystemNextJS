@@ -38,7 +38,7 @@ export default function RapportsPage() {
     setLoading(false);
   };
 
-  const downloadPDF = async (url: string, id: string) => {
+  const downloadPDF = async (url: string, nom: string, prenom: string) => {
     const token = localStorage.getItem("token");
     if (!token) return alert("Non connecté");
 
@@ -52,39 +52,54 @@ export default function RapportsPage() {
     const blob = new Blob([arrayBuffer], { type: "application/pdf" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `rapport_${id}.pdf`;
+    a.download = `rapport_${nom}_${prenom}.pdf`; // Nom plus clair
     a.click();
     URL.revokeObjectURL(a.href);
   };
 
   return (
     <DashboardLayout user={user}>
-      <div className="max-w-4xl mx-auto bg-white shadow-lg rounded p-6 border border-pink-200">
-        <h1 className="text-2xl font-bold text-pink-700 mb-4">Rapports Médicaux</h1>
-        {loading ? <p>Chargement…</p> :
-        rapports.length === 0 ? <p>Aucun rapport disponible.</p> :
-        <table className="w-full border border-pink-200">
-          <thead className="bg-pink-50">
-            <tr>
-              <th className="border px-4 py-2 text-pink-700">Patiente</th>
-              <th className="border px-4 py-2 text-pink-700">Date</th>
-              <th className="border px-4 py-2 text-pink-700">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rapports.map((r) => (
-              <tr key={r._id}>
-                <td className="border px-4 py-2">{r.patienteNom}</td>
-                <td className="border px-4 py-2">{new Date(r.dateSaisie).toLocaleDateString("fr-FR")}</td>
-                <td className="border px-4 py-2">
-                  <button onClick={() => downloadPDF(r.url, r._id)} className="bg-pink-500 text-white px-4 py-2 rounded hover:bg-pink-600">
-                    Télécharger PDF
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>}
+      <div className="max-w-5xl mx-auto bg-white shadow-xl rounded-xl p-8 border border-pink-200">
+        <h1 className="text-3xl font-extrabold text-pink-700 mb-6 tracking-wide">Rapports Médicaux</h1>
+
+        {loading ? (
+          <p className="text-gray-500">Chargement…</p>
+        ) : rapports.length === 0 ? (
+          <p className="text-gray-600">Aucun rapport disponible.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse shadow-sm rounded-lg overflow-hidden">
+              <thead className="bg-pink-50 text-pink-700 uppercase text-sm font-semibold">
+                <tr>
+                  <th className="px-6 py-3 border-b border-pink-200 text-left">Patiente</th>
+                  <th className="px-6 py-3 border-b border-pink-200 text-left">Date</th>
+                  <th className="px-6 py-3 border-b border-pink-200 text-left">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rapports.map((r, idx) => (
+                  <tr
+                    key={r._id}
+                    className={idx % 2 === 0 ? "bg-pink-50 hover:bg-pink-100" : "bg-white hover:bg-pink-100"}
+                  >
+                    <td className="px-6 py-4 border-b border-pink-200">{r.patienteNom}</td>
+                    <td className="px-6 py-4 border-b border-pink-200">
+                      {new Date(r.dateSaisie).toLocaleDateString("fr-FR")}
+                    </td>
+                    <td className="px-6 py-4 border-b border-pink-200">
+                      <button
+                        onClick={() => downloadPDF(r.url, r.patienteNom.split(" ")[0], r.patienteNom.split(" ")[1] || "")}
+                        className="bg-pink-600 text-white px-5 py-2 rounded-lg shadow hover:bg-pink-700 transition"
+                      >
+                        Télécharger PDF
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );

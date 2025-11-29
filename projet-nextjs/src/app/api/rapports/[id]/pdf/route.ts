@@ -63,13 +63,15 @@ export async function GET(
       doc.end();
     });
 
-    return new NextResponse(new Uint8Array(pdfBuffer), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="rapport-${id}.pdf"`,
-      },
-    });
+return new NextResponse(new Uint8Array(pdfBuffer), {
+  status: 200,
+  headers: {
+    "Content-Type": "application/pdf",
+    "Content-Disposition": `attachment; filename="${user.nom}_${user.prenom}.pdf"`,
+  },
+});
+
+
   } catch (error) {
     console.error("Erreur PDF:", error);
     return NextResponse.json(
