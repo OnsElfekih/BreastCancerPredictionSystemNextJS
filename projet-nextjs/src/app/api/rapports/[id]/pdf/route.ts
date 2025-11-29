@@ -1,57 +1,63 @@
 import { NextRequest, NextResponse } from "next/server";
 import PDFDocument from "pdfkit";
+import path from "path";
 import { dbConnect } from "@/lib/mongodb";
-import DonneeClinique from "@/models/IClinicalData";
-
-// Typage correct pour Next App Router
-interface RouteParams {
-  params: {
-    id: string;
-  };
-}
+import DonneesCliniques from "@/models/IClinicalData";
+import fs from "fs";
 
 export async function GET(
   req: NextRequest,
-  { params }: RouteParams
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
-
+    const { id } = await context.params;
     if (!id) {
-      return NextResponse.json(
-        { error: "id manquant" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "id manquant" }, { status: 400 });
     }
 
     await dbConnect();
-
-    const donnee = await DonneeClinique.findById(id);
-
+    const donnee = await DonneesCliniques.findById(id);
     if (!donnee) {
-      return NextResponse.json(
-        { error: "Donnée introuvable" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Donnée introuvable" }, { status: 404 });
     }
 
-    const doc = new PDFDocument();
+    // Chemin vers ta police TTF
+    const fontPath = path.join(process.cwd(), "public/fonts/times.ttf");
+    if (!fs.existsSync(fontPath)) {
+      return NextResponse.json({ error: "Police introuvable" }, { status: 500 });
+    }
 
-    const chunks: Buffer[] = [];
-    doc.on("data", (chunk) => chunks.push(chunk));
-    doc.on("end", () => {});
+    // Création du PDF
+    const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      const doc = new PDFDocument({ font: fontPath });
 
-    doc.fontSize(18).text("Rapport PDF");
-    doc.moveDown();
+      // Charger la police TTF avant toute génération
+      doc.font(fontPath);
 
-    doc.fontSize(12).text(`ID Donnée: ${donnee._id}`);
-    doc.text(`Patiente: ${donnee.patienteId}`);
+      doc.on("data", (chunk) => chunks.push(chunk));
+      doc.on("end", () => resolve(Buffer.concat(chunks)));
+      doc.on("error", reject);
 
-    doc.end();
+      doc.fontSize(18).text("Rapport Médical");
+      doc.moveDown();
+      doc.fontSize(12).text(`ID Donnée: ${donnee._id}`);
+      doc.text(`Patiente ID: ${donnee.patienteId}`);
+      doc.text(`Age: ${donnee.age}`);
+      doc.text(`BMI: ${donnee.BMI}`);
+      doc.text(`Glucose: ${donnee.glucose}`);
+      doc.text(`Insulin: ${donnee.insulin}`);
+      doc.text(`HOMA: ${donnee.HOMA}`);
+      doc.text(`Leptin: ${donnee.leptin}`);
+      doc.text(`Adiponectin: ${donnee.adiponectin}`);
+      doc.text(`Resistin: ${donnee.resistin}`);
+      doc.text(`MCP1: ${donnee.MCP1}`);
 
-    const buffer = Buffer.concat(chunks);
+      doc.end();
+    });
 
-    return new NextResponse(new Uint8Array(buffer), {
+    return new NextResponse(new Uint8Array(pdfBuffer), {
+      status: 200,
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `inline; filename="rapport-${id}.pdf"`,
@@ -60,7 +66,7 @@ export async function GET(
   } catch (error) {
     console.error("Erreur PDF:", error);
     return NextResponse.json(
-      { error: "Erreur serveur" },
+      { error: "Erreur serveur lors de la génération PDF" },
       { status: 500 }
     );
   }

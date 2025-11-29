@@ -1,7 +1,8 @@
+import User from "@/models/User";  // votre modèle existant
+import Patiente from "@/models/IPatiente";
+import DonneesCliniques from "@/models/IClinicalData";
 import { NextRequest, NextResponse } from "next/server";
 import { dbConnect } from "@/lib/mongodb";
-import DonneesCliniques from "@/models/IClinicalData";
-import Patiente from "@/models/IPatiente";
 import { verifyToken } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
@@ -11,6 +12,7 @@ export async function GET(req: NextRequest) {
     const user = verifyToken(req);
     if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
+    // Assurez-vous que le modèle User est bien enregistré avant populate
     const patientes = await Patiente.find({ gynecoId: user.userId }).populate("userId");
 
     const rapports = await Promise.all(
@@ -20,7 +22,7 @@ export async function GET(req: NextRequest) {
           _id: d._id.toString(),
           patienteNom: `${(p.userId as any).nom} ${(p.userId as any).prenom}`,
           dateSaisie: d.dateSaisie,
-          url: `/api/rapports/${d._id}/pdf` // correspond au route PDF
+          url: `/api/rapports/${d._id}/pdf`,
         }));
       })
     );
