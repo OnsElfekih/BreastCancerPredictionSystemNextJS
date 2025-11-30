@@ -311,20 +311,23 @@ const handleFormSubmit = async (e: React.FormEvent) => {
         </div>
       )}
 
-      {showDelete && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="absolute inset-0 bg-black/30"></div>
-          <div className="relative bg-white shadow-lg rounded-lg p-6 border border-pink-300 w-full max-w-md z-50">
-            <h3 className="text-lg font-semibold text-pink-700 mb-4">Confirmer la suppression</h3>
-            <p className="text-gray-700 mb-6">Voulez-vous vraiment supprimer cette patiente ?</p>
-            <div className="flex justify-end gap-3">
-
-              <button onClick={() => setShowDelete(false)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Annuler</button>
-              <button onClick={handleDelete} className="px-4 py-2 bg-rose-500 text-white rounded hover:bg-rose-600">Supprimer</button>
-            </div>
-          </div>
-        </div>
-      )}
+{showDelete && (
+  <div className="fixed inset-0 flex items-center justify-center z-50">
+    <div className="absolute inset-0 bg-black/30"></div>
+    <div className="relative bg-white shadow-lg rounded-lg p-6 border border-pink-300 w-full max-w-md z-50">
+      <h3 className="text-lg font-semibold text-pink-700 mb-4">Confirmer la suppression</h3>
+        <p className="text-gray-700 mb-6">
+          {deleteId
+            ? <>Voulez-vous vraiment supprimer la patiente <strong>{patientes.find(p => p._id === deleteId)?.userId?.nom || ""} {patientes.find(p => p._id === deleteId)?.userId?.prenom || ""}</strong> ?</>
+            : "Voulez-vous vraiment supprimer cette patiente ?"}
+        </p>
+      <div className="flex justify-end gap-3">
+        <button onClick={() => setShowDelete(false)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Annuler</button>
+        <button onClick={handleDelete} className="px-4 py-2 bg-rose-500 text-white rounded hover:bg-rose-600">Supprimer</button>
+      </div>
+    </div>
+  </div>
+)}
     </DashboardLayout>
   );
 }

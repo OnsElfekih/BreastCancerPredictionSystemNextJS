@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline"; // npm install @heroicons/react
-
+import Logo from "../logo.png";
+import Image from "next/image";
 export default function RegisterPage() {
   useEffect(() => {
     document.title = "Inscription - Système de Prédiction du Cancer du Sein";
@@ -53,6 +54,15 @@ export default function RegisterPage() {
         onSubmit={handleRegister}
         className="bg-gray-900 border border-gray-700 rounded-2xl shadow-lg w-full max-w-md p-8"
       >
+      <div className="flex justify-center mb-4">
+        <Image
+          src={Logo}
+          alt="Logo du système"
+          className="object-contain"
+          width={64} // h-16
+          height={64} // w-16
+        />
+      </div>
         <h1 className="text-2xl font-semibold text-center mb-6 text-pink-400">
           Créer un compte
         </h1>

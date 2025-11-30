@@ -1,4 +1,6 @@
 import PDFDocument from "pdfkit";
+import path from "path";
+import fs from "fs";
 
 export function applyPdfStyles(doc: InstanceType<typeof PDFDocument>) {
   doc.fontSize(22).fillColor("#d63384").text("Rapport Médical", {
@@ -13,7 +15,7 @@ export function applyPdfStyles(doc: InstanceType<typeof PDFDocument>) {
     });
 
   doc.moveDown(0.5)
-    .strokeColor("#d63384")
+    .strokeColor("#D90479")
     .lineWidth(2)
     .moveTo(50, doc.y)
     .lineTo(545, doc.y)
@@ -29,7 +31,15 @@ export function addPatientInfo(
   email: string,
   age: string
 ) {
-  doc.fontSize(16).fillColor("#d63384").text("Informations de la patiente");
+    const logoPath = path.join(process.cwd(), "src", "app", "logo.png");
+  if (fs.existsSync(logoPath)) {
+    doc.image(logoPath, 50, doc.y, { width: 50, height: 50 }); // placer le logo
+  }
+
+  doc.fontSize(20).fillColor("#d63384").text("BreastPredict", 110, doc.y + 15); // texte à côté du logo
+
+  doc.moveDown(2); // espacement après logo + titre
+  doc.fontSize(16).fillColor("#D90479").text("Informations de la patiente");
 
   doc.moveDown(0.5)
     .fontSize(12)
@@ -45,7 +55,7 @@ export function addClinicalTable(
   doc: InstanceType<typeof PDFDocument>,
   rows: [string, string][]
 ) {
-  doc.fontSize(16).fillColor("#d63384").text("Données Cliniques");
+  doc.fontSize(16).fillColor("#D90479").text("Données Cliniques");
   doc.moveDown(0.7);
 
   const startX = 60;

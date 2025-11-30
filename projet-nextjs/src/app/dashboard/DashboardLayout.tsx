@@ -1,6 +1,8 @@
 "use client";
 import { ReactNode, useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import Logo from "../logo.png"; // ton logo
 
 export const GridIcon = () => (
   <svg width="24" height="24" fill="currentColor">
@@ -78,7 +80,16 @@ export default function DashboardLayout({ children, user }: LayoutProps) {
   return (
     <div className="flex h-screen overflow-hidden bg-gray-100 text-black">
       <div className={`bg-gray-900 text-white w-64 p-4 transition-all ${sidebarOpen ? "block" : "hidden"}`}>
-        <h2 className="text-xl font-bold mb-6">Menu</h2>
+      <div className="flex items-center justify-center mb-6">
+        <Image
+          src={Logo}
+          alt="Logo BreastPredict"
+          width={48}
+          height={48}
+          className="object-contain"
+        />
+        <span className="ml-2 text-xl font-bold">BreastPredict</span>
+      </div>
         <ul>
           {navItems.map((item, index) => (
             <li
@@ -112,13 +123,20 @@ export default function DashboardLayout({ children, user }: LayoutProps) {
           </button>
 
           <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-2 text-black font-medium hover:text-gray-700 focus:outline-none"
-            >
-              Bonjour Dr {user.nom} {user.prenom}
-              <span>{dropdownOpen ? "˄" : "˅"}</span>
-            </button>
+  <button
+    onClick={() => setDropdownOpen(!dropdownOpen)}
+    className="flex items-center gap-2 text-black font-medium hover:text-gray-700 focus:outline-none"
+  >
+    <Image
+      src={Logo}
+      alt="Logo"
+      width={32}
+      height={32}
+      className="object-contain rounded-full"
+    />
+    Bonjour Dr {user.nom} {user.prenom}
+    <span>{dropdownOpen ? "˄" : "˅"}</span>
+  </button>
 
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg">

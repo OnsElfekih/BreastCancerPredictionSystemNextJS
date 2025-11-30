@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline"; // installer heroicons: npm install @heroicons/react
+import Logo from "../logo.png";
+import Image from "next/image";
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
@@ -65,6 +67,15 @@ const handleLogin = async (e: React.FormEvent) => {
         onSubmit={handleLogin}
         className="bg-gray-900 border border-gray-700 rounded-2xl shadow-lg w-full max-w-md p-8"
       >
+      <div className="flex justify-center mb-4">
+        <Image
+          src={Logo}
+          alt="Logo du système"
+          className="object-contain"
+          width={64} // h-16
+          height={64} // w-16
+        />
+      </div>
         <h1 className="text-2xl font-bold mb-8 text-center text-pink-400">
           Connexion
         </h1>
