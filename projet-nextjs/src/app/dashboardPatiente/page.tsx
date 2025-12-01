@@ -51,15 +51,22 @@ export default function DashboardPatiente() {
       ) : (
         <ul>
           {rapports.map((r) => (
-            <li key={r._id} className="mb-2 flex justify-between items-center">
-              <span>{new Date(r.dateSaisie).toLocaleDateString("fr-FR")}</span>
-              <button
-                onClick={() => downloadPDF(r.url)}
-                className="text-blue-400 hover:text-blue-300"
-              >
-                Télécharger PDF
-              </button>
-            </li>
+<li
+  key={r._id}
+  className="mb-4 flex justify-between items-center bg-gray-800 p-4 rounded shadow"
+>
+  <span className="text-lg font-medium">
+    {new Date(r.dateSaisie).toLocaleDateString("fr-FR")}
+  </span>
+
+  <button
+    onClick={() => downloadPDF(r.url)}
+    className="text-white bg-[#D90479] px-4 py-2 rounded font-medium hover:bg-[#c1036d] transition"
+  >
+    Télécharger PDF
+  </button>
+</li>
+
           ))}
         </ul>
       )}
