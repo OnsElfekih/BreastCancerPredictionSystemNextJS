@@ -232,15 +232,27 @@ const handleFormSubmit = async (e: React.FormEvent) => {
       </td>
       <td className="border px-4 py-2">{p.visites || 0}</td>
       <td className="border px-4 py-2 flex gap-2">
-        <button 
+<button
   onClick={() => window.location.href = `/donneescliniques?id=${p._id}`}
-  className="bg-purple-500 text-white px-2 py-1 rounded hover:bg-purple-600 flex-1"
+  className="text-white px-2 py-1 rounded flex-1"
+  style={{ backgroundColor: "#F263A6" }}
+  onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#c84f86")}
+  onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#F263A6")}
 >
   Données cliniques
 </button>
 
+
         <button onClick={() => handleEditClick(p)} className="bg-pink-400 text-white px-2 py-1 rounded hover:bg-pink-500 flex-1">Modifier</button>
-        <button onClick={() => { setDeleteId(p._id); setShowDelete(true); }} className="bg-rose-500 text-white px-2 py-1 rounded hover:bg-rose-600 flex-1">Supprimer</button>
+<button
+  onClick={() => { setDeleteId(p._id); setShowDelete(true); }}
+  className="text-white px-2 py-1 rounded flex-1"
+  style={{ backgroundColor: "#D90479" }}
+  onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#b10361")}
+  onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#D90479")}
+>
+  Supprimer
+</button>
       </td>
     </tr>
   ))}
@@ -323,7 +335,16 @@ const handleFormSubmit = async (e: React.FormEvent) => {
         </p>
       <div className="flex justify-end gap-3">
         <button onClick={() => setShowDelete(false)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Annuler</button>
-        <button onClick={handleDelete} className="px-4 py-2 bg-rose-500 text-white rounded hover:bg-rose-600">Supprimer</button>
+        <button
+  onClick={handleDelete}
+  className="px-4 py-2 text-white rounded"
+  style={{ backgroundColor: "#D90479" }}
+  onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#b10361")}
+  onMouseLeave={e => (e.currentTarget.style.backgroundColor = "#D90479")}
+>
+  Supprimer
+</button>
+
       </div>
     </div>
   </div>
