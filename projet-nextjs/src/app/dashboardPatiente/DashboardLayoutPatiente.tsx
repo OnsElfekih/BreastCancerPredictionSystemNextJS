@@ -1,5 +1,5 @@
 "use client";
-import { LogOut, FileText } from "lucide-react";
+import { LogOut } from "lucide-react";
 
 export default function DashboardLayoutPatiente({ user, children }: any) {
   return (

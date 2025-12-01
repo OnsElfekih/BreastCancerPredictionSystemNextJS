@@ -4,16 +4,65 @@ import DashboardLayoutPatiente from "./DashboardLayoutPatiente";
 
 export default function DashboardPatiente() {
   const [user, setUser] = useState({ nom: "", prenom: "" });
+  const [rapports, setRapports] = useState<any[]>([]);
 
-  useEffect(() => {
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    return headers;
+  };
+
+  // Charger le nom/prénom depuis localStorage si disponible
+  const loadUser = () => {
     const nom = localStorage.getItem("nom") || "";
     const prenom = localStorage.getItem("prenom") || "";
     setUser({ nom, prenom });
+  };
+
+  const loadRapports = async () => {
+    const res = await fetch("/api/patientes/mes-rapports", { headers: getAuthHeaders() });
+    if (res.ok) {
+      const data = await res.json();
+      setRapports(data);
+    }
+  };
+
+  useEffect(() => {
+    loadUser();
+    loadRapports();
   }, []);
+
+  const downloadPDF = async (url: string) => {
+    const res = await fetch(url, { headers: getAuthHeaders() });
+    const arrayBuffer = await res.arrayBuffer();
+    const blob = new Blob([arrayBuffer], { type: "application/pdf" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `rapport.pdf`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
 
   return (
     <DashboardLayoutPatiente user={user}>
-      <p>Bienvenue dans votre espace. Vous pouvez consulter ou télécharger vos rapports.</p>
+      {rapports.length === 0 ? (
+        <p>Aucun rapport disponible.</p>
+      ) : (
+        <ul>
+          {rapports.map((r) => (
+            <li key={r._id} className="mb-2 flex justify-between items-center">
+              <span>{new Date(r.dateSaisie).toLocaleDateString("fr-FR")}</span>
+              <button
+                onClick={() => downloadPDF(r.url)}
+                className="text-blue-400 hover:text-blue-300"
+              >
+                Télécharger PDF
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </DashboardLayoutPatiente>
   );
 }
