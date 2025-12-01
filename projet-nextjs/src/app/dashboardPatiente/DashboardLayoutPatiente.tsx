@@ -9,10 +9,6 @@ export default function DashboardLayoutPatiente({ user, children }: any) {
           Bonjour {user.nom} {user.prenom}
         </h1>
         <div className="flex space-x-4">
-          <button className="flex items-center space-x-1 hover:text-gray-300">
-            <FileText size={18} />
-            <span>Mes rapports</span>
-          </button>
           <button
             onClick={() => {
               localStorage.clear();
