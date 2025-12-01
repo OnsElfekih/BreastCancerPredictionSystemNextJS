@@ -6,15 +6,15 @@ interface Props {
 }
 
 export default function MoyenneAgeChart({ moyenneAge }: Props) {
-  const data = [{ name: "Moyenne âge", value: moyenneAge }];
+  const data = [{ name: "Âge", value: moyenneAge }];
 
   return (
-    <ResponsiveContainer width="100%" height={250}>
+    <ResponsiveContainer width="100%" height="100%">
       <BarChart data={data}>
         <XAxis dataKey="name" />
         <YAxis />
         <Tooltip />
-        <Bar dataKey="value" fill="#d63384" />
+        <Bar dataKey="value" fill="#D90479" />
       </BarChart>
     </ResponsiveContainer>
   );

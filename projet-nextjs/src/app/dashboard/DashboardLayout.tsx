@@ -152,9 +152,11 @@ export default function DashboardLayout({ children, user }: LayoutProps) {
           </div>
         </div>
 
-      <div className="flex-1 p-6 bg-gray-100 overflow-hidden">
-        {children}
-      </div>
+<div className="flex-1 p-6 bg-gray-100 overflow-auto">
+  <div className="w-full h-full" style={{ minHeight: "600px" }}>
+    {children}
+  </div>
+</div>
       </div>
     </div>
   );

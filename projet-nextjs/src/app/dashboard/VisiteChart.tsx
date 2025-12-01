@@ -1,44 +1,37 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Bar } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-} from "chart.js";
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function VisitesChart() {
-  const [data, setData] = useState({ nouvellesVisites: 0, visitesRecurrentes: 0 });
+  const [data, setData] = useState([{ nouvelles: 0, recurrentes: 0 }]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+
     fetch("/api/patientes/statistiques", {
       headers: { Authorization: token ? `Bearer ${token}` : "" }
     })
       .then(res => res.json())
-      .then(stat => setData(stat))
+      .then(stat => {
+        setData([
+          {
+            nouvelles: stat.nouvellesVisites || 0,
+            recurrentes: stat.visitesRecurrentes || 0
+          }
+        ]);
+      })
       .catch(() => {});
   }, []);
 
-  const chartData = {
-    labels: ["Visites"],
-    datasets: [
-      { label: "Nouvelles", data: [data.nouvellesVisites], backgroundColor: "#f472b6" },
-      { label: "Récurrentes", data: [data.visitesRecurrentes], backgroundColor: "#3b82f6" }
-    ]
-  };
-const options = {
-  responsive: true,
-  maintainAspectRatio: false, // permet de définir taille exacte
-  plugins: { legend: { position: "top" as const } },
-  scales: { y: { beginAtZero: true } }
-};
-
-  return <Bar data={chartData} options={{ responsive: true, plugins: { legend: { position: "top" } } }} />;
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart data={data}>
+        <XAxis dataKey={() => "Visites"} />
+        <YAxis />
+        <Tooltip />
+        <Bar dataKey="nouvelles" fill="#f472b6" name="Nouvelles" />
+        <Bar dataKey="recurrentes" fill="#D9078F" name="Récurrentes" />
+      </BarChart>
+    </ResponsiveContainer>
+  );
 }
