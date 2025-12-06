@@ -25,6 +25,8 @@ export default function DonneesCliniquesPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  const [prediction, setPrediction] = useState<number | null>(null);
+
   const [form, setForm] = useState({
     age: "",
     BMI: "",
@@ -111,30 +113,61 @@ export default function DonneesCliniquesPage() {
       MCP1: parseFloat(form.MCP1),
     };
 
+    let newEntry = null;
+
+    // UPDATE
     if (editingId) {
-      // PUT pour modification
       const res = await fetch(`/api/donneescliniques/${editingId}`, {
         method: "PUT",
         headers: getAuthHeaders(),
         body: JSON.stringify(body),
       });
+
       if (res.ok) {
         const updated = await res.json();
-        setDonnees((prev) =>
-          prev.map((d) => (d._id === editingId ? updated : d))
-        );
+        newEntry = updated;
+        setDonnees((prev) => prev.map((d) => (d._id === editingId ? updated : d)));
       }
-    } else {
-      // POST pour ajout
+    } 
+    // CREATE
+    else {
       const res = await fetch(`/api/donneescliniques/${patienteId}`, {
         method: "POST",
         headers: getAuthHeaders(),
         body: JSON.stringify(body),
       });
+
       if (res.ok) {
-        const data = await res.json();
-        setDonnees((prev) => [...prev, data]);
+        const added = await res.json();
+        newEntry = added;
+        setDonnees((prev) => [...prev, added]);
       }
+    }
+
+    // SEND DATA TO FLASK MODEL
+    try {
+      const resPred = await fetch("http://127.0.0.1:5000/api/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          features: [
+            body.age,
+            body.BMI,
+            body.glucose,
+            body.insulin,
+            body.HOMA,
+            body.leptin,
+            body.adiponectin,
+            body.resistin,
+            body.MCP1
+          ],
+        }),
+      });
+
+      const predData = await resPred.json();
+      setPrediction(predData.prediction[0]);
+    } catch (err) {
+      console.log("Erreur prédiction", err);
     }
 
     // Reset form
@@ -156,9 +189,7 @@ export default function DonneesCliniquesPage() {
   return (
     <DashboardLayout user={user}>
       <div className="max-w-4xl mx-auto bg-white shadow-lg rounded p-6 border border-pink-200">
-        <h1 className="text-2xl font-bold text-pink-700 mb-4">
-          Données cliniques
-        </h1>
+        <h1 className="text-2xl font-bold text-pink-700 mb-4">Données cliniques</h1>
 
         {patiente && (
           <div className="bg-pink-50 p-4 rounded mb-4 border border-pink-200">
@@ -166,6 +197,23 @@ export default function DonneesCliniquesPage() {
               {patiente.userId?.nom} {patiente.userId?.prenom}
             </p>
             <p>ID Dossier: {patiente.idDossierMedical}</p>
+          </div>
+        )}
+
+        {prediction !== null && (
+          <div className="bg-green-50 p-4 rounded border border-green-300 mb-4">
+            <h2 className="text-lg font-bold text-green-700">Résultat de prédiction</h2>
+
+            <p className="text-green-800 mt-2">
+              Risque prédit: <strong>{prediction}</strong>
+            </p>
+
+            <div className="w-full bg-gray-200 h-4 rounded mt-3">
+              <div
+                className="bg-green-600 h-4 rounded"
+                style={{ width: `${prediction * 100}%` }}
+              ></div>
+            </div>
           </div>
         )}
 
@@ -181,9 +229,7 @@ export default function DonneesCliniquesPage() {
         {showForm && (
           <div className="bg-pink-50 p-4 rounded border border-pink-200 mb-4">
             <div className="mb-3">
-              <label className="block text-sm text-gray-700 mb-1">
-                Date de saisie
-              </label>
+              <label className="block text-sm text-gray-700 mb-1">Date de saisie</label>
               <input
                 type="text"
                 value={new Date().toLocaleDateString()}
@@ -208,10 +254,7 @@ export default function DonneesCliniquesPage() {
             </div>
 
             <div className="flex gap-2 mt-4">
-              <button
-                onClick={submitForm}
-                className="bg-pink-600 text-white px-4 py-2 rounded"
-              >
+              <button onClick={submitForm} className="bg-pink-600 text-white px-4 py-2 rounded">
                 {editingId ? "Modifier" : "Enregistrer"}
               </button>
 
