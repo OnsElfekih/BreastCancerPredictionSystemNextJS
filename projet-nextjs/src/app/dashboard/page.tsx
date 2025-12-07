@@ -2,8 +2,6 @@
 import { useEffect, useState } from "react";
 import DashboardLayout from "./DashboardLayout";
 import VisitesChart from "./VisiteChart";
-import MoyenneAgeChart from "./MoyenneAgeChart";
-import MoyenneVisitesChart from "./MoyenneVisitesChart";
 
 interface PatienteData {
   visites?: number;
@@ -66,29 +64,29 @@ export default function Dashboard() {
       <div className="grid grid-cols-3 gap-4">
 
         {/* Total patientes */}
-        <div className="bg-white shadow rounded-lg p-4 border border-pink-200">
+        <div className="bg-white shadow rounded-lg p-4 border border-pink-200 flex flex-col items-center">
           <h2 className="text-lg font-semibold text-pink-700 mb-2">Total patientes</h2>
           <p className="text-3xl font-bold text-pink-900">{totalPatientes}</p>
         </div>
 
-        {/* Moyenne âge */}
-<div className="bg-white shadow rounded-lg p-4 border flex flex-col items-center">
-  <h2 className="text-lg font-semibold text-black mb-2 text-center">Moyenne âge</h2>
-  <div className="w-full h-40">
-    <MoyenneAgeChart moyenneAge={moyenneAge} />
-  </div>
+{/* Moyenne âge */}
+<div className="bg-white shadow rounded-lg p-4 border border-pink-200 flex flex-col items-center">
+  <h2 className="text-lg font-semibold text-pink-700 mb-2">Moyenne âge</h2>
+
+  <p className="text-3xl font-bold text-pink-900">{moyenneAge} ans</p>
 </div>
 
 
+
         {/* Moyenne visites */}
-        <div className="bg-white shadow rounded-lg p-4 border flex flex-col items-center">
-          <h2 className="text-lg font-semibold text-black mb-2 text-center">
-            Moyenne visites
-          </h2>
-          <div style={{ width: 160, height: 160 }}>
-            <MoyenneVisitesChart moyenneVisites={moyenneVisites} />
-          </div>
-        </div>
+{/* Moyenne visites */}
+<div className="bg-white shadow rounded-lg p-4 border border-pink-200 flex flex-col items-center">
+  <h2 className="text-lg font-semibold text-pink-700 mb-2">Moyenne visites</h2>
+
+  <p className="text-3xl font-bold text-pink-900">{moyenneVisites}</p>
+</div>
+
+
 
         {/* Graph visites */}
 <div className="col-span-3 bg-white shadow rounded-lg p-4 border">
