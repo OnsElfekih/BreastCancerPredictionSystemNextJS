@@ -89,14 +89,34 @@ export default function Dashboard() {
 
 
         {/* Graph visites */}
-<div className="col-span-3 bg-white shadow rounded-lg p-4 border">
-  <h2 className="text-lg font-semibold text-black mb-2 text-center">
-    Statistiques des visites patientes
-  </h2>
-  <div className="w-full h-64">
-    <VisitesChart />
+{/* Statistiques des visites patientes */}
+<div className="col-span-3 grid grid-cols-2 gap-4">
+
+  {/* PARTIE GAUCHE : toute la carte statistiques */}
+  <div className="bg-white shadow rounded-lg p-4 border">
+    <h2 className="text-lg font-semibold text-black mb-4 text-center">
+      Statistiques des visites patientes
+    </h2>
+
+    <div className="w-full h-64">
+      <VisitesChart />
+    </div>
   </div>
+
+  {/* PARTIE DROITE : carte blanche vide pour ton futur contenu */}
+  <div className="bg-white shadow rounded-lg p-4 border">
+    <h2 className="text-lg font-semibold text-black mb-4 text-center">
+      Autre information
+    </h2>
+
+    <p className="text-pink-900">
+      Place ton contenu ici.
+    </p>
+  </div>
+
 </div>
+
+
 
 
       </div>
