@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/projet-nextjs";
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://elfekihons:elfekih69ons@cluster0.v7vr279.mongodb.net/projet-nextjs?retryWrites=true&w=majority";
 
 if (!MONGODB_URI) {
   throw new Error("❌ Please add your MongoDB URI to .env.local");

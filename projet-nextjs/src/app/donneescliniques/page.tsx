@@ -200,22 +200,25 @@ export default function DonneesCliniquesPage() {
           </div>
         )}
 
-        {prediction !== null && (
-          <div className="bg-green-50 p-4 rounded border border-green-300 mb-4">
-            <h2 className="text-lg font-bold text-green-700">Résultat de prédiction</h2>
+{prediction !== null && (
+  <div className="flex justify-center my-6">
+    <div className="text-center bg-pink-50 p-6 rounded-lg border border-pink-300 shadow">
+      <h2 className="text-xl font-bold text-black-700 mb-2">
+        État prédit de la patiente :
+      </h2>
 
-            <p className="text-green-800 mt-2">
-              Risque prédit: <strong>{prediction}</strong>
-            </p>
+      <p
+        className={`text-2xl font-bold mt-4 ${
+          prediction === 1 ? "text-red-600" : "text-green-600"
+        }`}
+      >
+        Patiente {prediction === 1 ? "malade" : "saine"}
+      </p>
+    </div>
+  </div>
+)}
 
-            <div className="w-full bg-gray-200 h-4 rounded mt-3">
-              <div
-                className="bg-green-600 h-4 rounded"
-                style={{ width: `${prediction * 100}%` }}
-              ></div>
-            </div>
-          </div>
-        )}
+
 
         {!showForm && (
           <button
