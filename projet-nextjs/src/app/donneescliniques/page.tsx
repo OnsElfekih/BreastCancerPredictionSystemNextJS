@@ -204,7 +204,7 @@ export default function DonneesCliniquesPage() {
   <div className="flex justify-center my-6">
     <div className="text-center bg-pink-50 p-6 rounded-lg border border-pink-300 shadow">
       <h2 className="text-xl font-bold text-black-700 mb-2">
-        Résultat de la prédiction :
+        État prédit de la patiente :
       </h2>
 
       <p
