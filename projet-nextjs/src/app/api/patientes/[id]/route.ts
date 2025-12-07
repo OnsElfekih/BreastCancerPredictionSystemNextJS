@@ -6,20 +6,22 @@ import bcrypt from "bcryptjs";
 import { verifyToken } from "@/lib/auth";
 import { Types } from "mongoose";
 
-// Helper pour extraire l'id correctement
-async function getId(params: Promise<{ id: string }>) {
-  const resolved = await params;
-  return resolved.id;
+// Helper pour extraire l'id de params (Next.js fournit params comme Promise<{}>)
+async function resolveId(params: Promise<{}>): Promise<string> {
+  const p = await params;
+  const id = (p as { id: string }).id;
+  if (!id) throw new Error("ID manquant dans params");
+  return id;
 }
 
 /* ---------- PUT ---------- */
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const id = await getId(params);
-
+export async function PUT(req: NextRequest, { params }: { params: Promise<{}> }) {
   try {
+    const id = await resolveId(params);
+
     await dbConnect();
 
-    if (!Types.ObjectId.isValid(id))
+    if (!Types.ObjectId.isValid(id)) 
       return NextResponse.json({ message: "ID invalide" }, { status: 400 });
 
     const user = verifyToken(req);
@@ -30,7 +32,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const patiente = await Patiente.findOne({ _id: id, gynecoId: user.userId }).populate("userId");
     if (!patiente) return NextResponse.json({ message: "Patiente introuvable" }, { status: 404 });
 
-    const updates: any = {};
+    // Update user fields seulement si présentes
+    const updates: Partial<{ nom: string; prenom: string; email: string; password: string }> = {};
     if (body.nom) updates.nom = body.nom;
     if (body.prenom) updates.prenom = body.prenom;
     if (body.email) updates.email = body.email;
@@ -49,16 +52,17 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const full = await patiente.populate("userId", "nom prenom email");
 
     return NextResponse.json({ message: "Patiente mise à jour", patiente: full }, { status: 200 });
+
   } catch (e: any) {
     return NextResponse.json({ message: "Erreur mise à jour", error: e.message }, { status: 500 });
   }
 }
 
 /* ---------- DELETE ---------- */
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const id = await getId(params);
-
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{}> }) {
   try {
+    const id = await resolveId(params);
+
     await dbConnect();
 
     if (!Types.ObjectId.isValid(id))
@@ -74,11 +78,10 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
     await Patiente.findByIdAndDelete(patiente._id);
 
-    if (userId) {
-      await User.findByIdAndDelete(userId);
-    }
+    if (userId) await User.findByIdAndDelete(userId);
 
     return NextResponse.json({ message: "Patiente supprimée" }, { status: 200 });
+
   } catch (e: any) {
     return NextResponse.json({ message: "Erreur suppression", error: e.message }, { status: 500 });
   }
