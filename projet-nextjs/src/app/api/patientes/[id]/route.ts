@@ -6,34 +6,42 @@ import bcrypt from "bcryptjs";
 import { verifyToken } from "@/lib/auth";
 import { Types } from "mongoose";
 
+// Helper pour extraire l'id correctement
+async function getId(params: Promise<{ id: string }>) {
+  const resolved = await params;
+  return resolved.id;
+}
+
 /* ---------- PUT ---------- */
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const id = await getId(params);
+
   try {
     await dbConnect();
-    const resolvedParams = await params;
-    const id = resolvedParams.id;
+
+    if (!Types.ObjectId.isValid(id))
+      return NextResponse.json({ message: "ID invalide" }, { status: 400 });
 
     const user = verifyToken(req);
     if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    if (!Types.ObjectId.isValid(id)) return NextResponse.json({ message: "ID invalide" }, { status: 400 });
 
     const body = await req.json();
-    const patiente = await Patiente.findOne({ _id: new Types.ObjectId(id), gynecoId: user.userId }).populate("userId");
+
+    const patiente = await Patiente.findOne({ _id: id, gynecoId: user.userId }).populate("userId");
     if (!patiente) return NextResponse.json({ message: "Patiente introuvable" }, { status: 404 });
 
-    const updates: any = {
-      nom: body.nom,
-      prenom: body.prenom,
-      email: body.email
-    };
+    const updates: any = {};
+    if (body.nom) updates.nom = body.nom;
+    if (body.prenom) updates.prenom = body.prenom;
+    if (body.email) updates.email = body.email;
     if (body.password && body.password.trim() !== "") {
       updates.password = await bcrypt.hash(body.password, 10);
     }
+
     await User.findByIdAndUpdate(patiente.userId._id, updates);
 
-    patiente.idDossierMedical = body.idDossierMedical;
-    patiente.dateDeNaissance = new Date(body.dateDeNaissance);
-
+    if (body.idDossierMedical) patiente.idDossierMedical = body.idDossierMedical;
+    if (body.dateDeNaissance) patiente.dateDeNaissance = new Date(body.dateDeNaissance);
     if (body.visites !== undefined) patiente.visites = body.visites;
     if (body.incrementVisite) patiente.visites += 1;
 
@@ -46,32 +54,32 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 }
 
-
 /* ---------- DELETE ---------- */
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const id = await getId(params);
+
   try {
     await dbConnect();
-
-    const resolvedParams = await params;
-    const id = resolvedParams.id;
-
-    const user = verifyToken(req);
-    if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
     if (!Types.ObjectId.isValid(id))
       return NextResponse.json({ message: "ID invalide" }, { status: 400 });
 
-    const patiente = await Patiente.findOne({ _id: new Types.ObjectId(id), gynecoId: user.userId });
+    const user = verifyToken(req);
+    if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
+    const patiente = await Patiente.findOne({ _id: id, gynecoId: user.userId });
     if (!patiente) return NextResponse.json({ message: "Patiente introuvable" }, { status: 404 });
 
     const userId = patiente.userId;
 
     await Patiente.findByIdAndDelete(patiente._id);
-    if (userId) await User.findByIdAndDelete(userId);
+
+    if (userId) {
+      await User.findByIdAndDelete(userId);
+    }
 
     return NextResponse.json({ message: "Patiente supprimée" }, { status: 200 });
   } catch (e: any) {
     return NextResponse.json({ message: "Erreur suppression", error: e.message }, { status: 500 });
   }
 }
-
