@@ -27,13 +27,17 @@ export async function POST(req: Request) {
       role
     });
 
+    const allowReturnPasswordHash =
+      process.env.DEBUG_RETURN_PASSWORD_HASH === "true" || process.env.NODE_ENV !== "production";
+
     return new Response(
       JSON.stringify({
         message: "Utilisateur créé",
         userId: user._id,
         nom: user.nom,
         prenom: user.prenom,
-        role: user.role
+        role: user.role,
+        ...(allowReturnPasswordHash ? { passwordHash: user.password } : {})
       }),
       { status: 201, headers: { "Content-Type": "application/json" } }
     );
