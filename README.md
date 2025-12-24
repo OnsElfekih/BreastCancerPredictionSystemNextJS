@@ -1,5 +1,5 @@
-﻿# BreastCancerPredictionSystemNextJS
-BreastCancerPredictionSystemNextJS is a full‑stack web application for managing patients, capturing clinical data, running an automated breast cancer risk prediction, and generating medical reports (PDF).
+﻿# BreastCancerPredictionSystem Web Application 
+A full‑stack web application for managing patients, capturing clinical data, running an automated breast cancer risk prediction, and generating medical reports (PDF).
 
  ## Overview
  
@@ -100,3 +100,4 @@ pip install flask flask-cors joblib numpy
     - Clinical data
     - Prediction
     - Reports (PDF)
+
