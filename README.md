@@ -101,3 +101,8 @@ pip install flask flask-cors joblib numpy
     - Prediction
     - Reports (PDF)
 
+## 👩‍💻 Author
+
+**Ons ELFEKIH**  
+IT Engineering Student — Business Intelligence  
+🔗 [GitHub](https://github.com/OnsElfekih) · [LinkedIn](https://www.linkedin.com/in/ons-elfekih)
